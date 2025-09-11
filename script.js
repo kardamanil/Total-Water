@@ -2,14 +2,14 @@
 
 // Firebase Config (from your message)
 const firebaseConfig = {
-    apiKey: "AIzaSyDSqffmlg33rpMc6a2JUddg9pYQFvR8aXU",
-    authDomain: "labcalc-cee5c.firebaseapp.com",
-    databaseURL: "https://labcalc-cee5c-default-rtdb.firebaseio.com",
-    projectId: "labcalc-cee5c",
-    storageBucket: "labcalc-cee5c.firebasestorage.app",
-    messagingSenderId: "1030109019271",
-    appId: "1:1030109019271:web:e66f263a8a1c003b41cc22",
-    measurementId: "G-R9KDMPJX3S"
+    apiKey: "AIzaSyCmHdqB4dGNAjtZUs5MjXASdzic3IJ5k5w",
+    authDomain: "total-water-cc20d.firebaseapp.com",
+    databaseURL: "https://total-water-cc20d-default-rtdb.firebaseio.com",
+    projectId: "total-water-cc20d",
+    storageBucket: "total-water-cc20d.firebasestorage.app",
+    messagingSenderId: "1099058814545",
+    appId: "1:1099058814545:web:70881f25d15de3f14ce270",
+    measurementId: "G-3NC2PQ3F16"
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
