@@ -7,10 +7,24 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Firebase SDK (non-modular for compatibility) -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <!-- docx.js and FileSaver.js for DOCX generation -->
+    <!-- Firebase SDK (Module) -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js';
+        import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js';
+        const firebaseConfig = {
+            apiKey: "AIzaSyCmHdqB4dGNAjtZUs5MjXASdzic3IJ5k5w",
+            authDomain: "total-water-cc20d.firebaseapp.com",
+            databaseURL: "https://total-water-cc20d-default-rtdb.firebaseio.com",
+            projectId: "total-water-cc20d",
+            storageBucket: "total-water-cc20d.firebasestorage.app",
+            messagingSenderId: "1099058814545",
+            appId: "1:1099058814545:web:70881f25d15de3f14ce270",
+            measurementId: "G-3NC2PQ3F16"
+        };
+        const app = initializeApp(firebaseConfig);
+        window.db = getFirestore(app); // Global for script.js
+    </script>
+    <!-- docx.js और FileSaver.js -->
     <script src="https://unpkg.com/docx@9.5.1/build/index.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
@@ -59,7 +73,7 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Report Date (DD-MM-YYYY):</label>
-                            <input type="text" class="form-control" id="report-date" value="11-09-2025" required>
+                            <input type="text" class="form-control" id="report-date" value="09-09-2025" required>
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -87,7 +101,7 @@
                         <button type="button" class="btn btn-primary mt-2" id="load-sample-csv">Load CSV</button>
                     </div>
                 </div>
-                <button type="button" class="btn btn-success" id="next-to-chemical">Next to Chemical Results</button>
+                <button type="button" class="btn btn-success" id="next-chemical">Next to Chemical Results</button>
                 <button type="button" class="btn btn-secondary" id="clear-samples">Clear Samples</button>
                 <div id="sample-entries"></div>
             </div>
@@ -150,6 +164,6 @@
         </div>
         <div id="status-var" class="status-var"></div>
     </div>
-    <script src="js/script.js"></script>
+    <script src="js/script.js" type="module"></script>
 </body>
 </html>
