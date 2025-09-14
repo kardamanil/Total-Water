@@ -125,7 +125,7 @@ function openSampleTab() {
 }
 
 // Sample Functions
-function addSampleEntry(sample = { source: '', location: '', chiSampleNo: '', date: '', labNo: '', sender: '' }, index = sampleDetails.length) {
+function addSampleEntry(sample = { Source: '', Location: '', 'CHI Sample No.': '', Date: '', 'Lab No.': '', Sender: '' }, index = sampleDetails.length) {
     const container = document.getElementById('sample-entries');
     const div = document.createElement('div');
     div.className = 'sample-entry row align-items-end mb-3 p-3 border rounded bg-light';
@@ -136,27 +136,27 @@ function addSampleEntry(sample = { source: '', location: '', chiSampleNo: '', da
             <div class="row g-2">
                 <div class="col-md-2">
                     <label class="form-label small fw-bold">Source</label>
-                    <input type="text" class="form-control sample-source" value="${sample.source}" placeholder="Enter Source">
+                    <input type="text" class="form-control sample-source" value="${sample.Source || ''}" placeholder="Enter Source">
                 </div>
                 <div class="col-md-2">
                     <label class="form-label small fw-bold">Location</label>
-                    <input type="text" class="form-control sample-location" value="${sample.location}" placeholder="Enter Location">
+                    <input type="text" class="form-control sample-location" value="${sample.Location || ''}" placeholder="Enter Location">
                 </div>
                 <div class="col-md-2">
                     <label class="form-label small fw-bold">CHI Sample No.</label>
-                    <input type="text" class="form-control sample-chi-sample-no" value="${sample.chiSampleNo}" placeholder="Enter CHI No.">
+                    <input type="text" class="form-control sample-chi-sample-no" value="${sample['CHI Sample No.'] || ''}" placeholder="Enter CHI No.">
                 </div>
                 <div class="col-md-2">
                     <label class="form-label small fw-bold">Date (DD/MM/YYYY)</label>
-                    <input type="text" class="form-control sample-date" value="${sample.date}" placeholder="DD/MM/YYYY">
+                    <input type="text" class="form-control sample-date" value="${sample.Date || ''}" placeholder="DD/MM/YYYY">
                 </div>
                 <div class="col-md-2">
                     <label class="form-label small fw-bold">Lab No. (123/2025)</label>
-                    <input type="text" class="form-control sample-lab-no" value="${sample.labNo}" placeholder="123/2025">
+                    <input type="text" class="form-control sample-lab-no" value="${sample['Lab No.'] || ''}" placeholder="123/2025">
                 </div>
                 <div class="col-md-2">
                     <label class="form-label small fw-bold">Sender</label>
-                    <input type="text" class="form-control sample-sender" value="${sample.sender}" placeholder="Enter Sender">
+                    <input type="text" class="form-control sample-sender" value="${sample.Sender || ''}" placeholder="Enter Sender">
                 </div>
             </div>
         </div>
@@ -167,13 +167,13 @@ function addSampleEntry(sample = { source: '', location: '', chiSampleNo: '', da
         </div>
     `;
     container.appendChild(div);
-    sampleDetails[index] = { Source: sample.source, Location: sample.location, "CHI Sample No.": sample.chiSampleNo, Date: sample.date, "Lab No.": sample.labNo, Sender: sample.sender };
+    sampleDetails[index] = { Source: sample.Source, Location: sample.Location, 'CHI Sample No.': sample['CHI Sample No.'], Date: sample.Date, 'Lab No.': sample['Lab No.'], Sender: sample.Sender };
 }
 
 function addSamplesFromNum() {
     const num = parseInt(document.getElementById('num-samples').value);
     if (isNaN(num) || num < 1 || num > 20) return setStatus("1-20 के बीच नंबर दर्ज करें।", "warning");
-    for (let i = sampleDetails.length; i < num; i++) {
+    for (let i = sampleDetails.length; i < sampleDetails.length + num; i++) {
         addSampleEntry({}, i);
     }
     setStatus(`${num} सैंपल जोड़े गए। आप इन्हें एडिट या डिलीट कर सकते हैं।`, "success");
@@ -189,26 +189,27 @@ function loadSampleCsv() {
         const headers = lines[0].split(',');
         const required = ["Source", "Location", "CHI Sample No.", "Date", "Lab No.", "Sender"];
         if (!required.every(h => headers.some(head => head.trim() === h))) return setStatus("CSV में ये कॉलम होने चाहिए: " + required.join(", "), "danger");
+        const maxLoaded = document.getElementById('num-samples').value ? parseInt(document.getElementById('num-samples').value) : lines.length - 1;
         sampleDetails = [];
         renderSampleEntries();
         let loaded = 0;
-        for (let i = 1; i < lines.length; i++) {
+        for (let i = 1; i < lines.length && loaded < maxLoaded; i++) {
             const row = lines[i].split(',');
             const data = {};
             headers.forEach((h, j) => data[h.trim()] = row[j]?.trim());
             if (validateDate(data.Date) && validateLabNo(data["Lab No."])) {
                 addSampleEntry({
-                    source: data.Source || '',
-                    location: data.Location || '',
-                    chiSampleNo: data["CHI Sample No."] || '',
-                    date: data.Date || '',
-                    labNo: data["Lab No."] || '',
-                    sender: data.Sender || ''
+                    Source: data["Source"] || '',
+                    Location: data["Location"] || '',
+                    'CHI Sample No.': data["CHI Sample No."] || '',
+                    Date: data.Date || '',
+                    'Lab No.': data["Lab No."] || '',
+                    Sender: data.Sender || ''
                 }, loaded);
                 loaded++;
             }
         }
-        setStatus(`${loaded} सैंपल CSV से लोड हुए। आप इन्हें एडिट या डिलीट कर सकते हैं।`, "success");
+        setStatus(`${loaded} सैंपल CSV से लोड हुए (अधिकतम ${maxLoaded})। आप इन्हें एडिट या डिलीट कर सकते हैं।`, "success");
     };
     reader.readAsText(file, 'UTF-8');
 }
@@ -246,7 +247,7 @@ function generateReport() {
         const labNo = entry.querySelector('.sample-lab-no').value.trim();
         const sender = entry.querySelector('.sample-sender').value.trim();
         if (source && location && chiSampleNo && date && labNo && sender && validateDate(date) && validateLabNo(labNo)) {
-            sampleDetails.push({ Source: source, Location: location, "CHI Sample No.": chiSampleNo, Date: date, "Lab No.": labNo, Sender: sender });
+            sampleDetails.push({ Source: source, Location: location, 'CHI Sample No.': chiSampleNo, Date: date, 'Lab No.': labNo, Sender: sender });
             valid++;
         }
     });
@@ -261,12 +262,12 @@ async function populateChemicalResultsTab() {
     const container = document.getElementById('chemical-table-container');
     container.innerHTML = '<div class="text-center p-3"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>';
     let tableHTML = '<table class="table table-bordered table-sm"><thead><tr><th>Test</th>';
-    sampleDetails.forEach(s => tableHTML += `<th colspan="3" class="text-center fw-bold">${s["Lab No."]}<br><small class="text-muted">Input | Final | Status</small></th>`);
+    sampleDetails.forEach(s => tableHTML += `<th colspan="3" class="text-center fw-bold">${s['Lab No.']}<br><small class="text-muted">Input | Final | Status</small></th>`);
     tableHTML += '</tr></thead><tbody>';
     for (const test of tests) {
         tableHTML += `<tr><td class="fw-bold">${test.name}:</td>`;
         for (const sample of sampleDetails) {
-            const labNo = sample["Lab No."];
+            const labNo = sample['Lab No.'];
             const docId = labNo.replace('/', '-');
             let value = '';
             try {
@@ -282,7 +283,7 @@ async function populateChemicalResultsTab() {
                         "Magnesium": "mg",
                         "Chloride": "chl",
                         "Alkalinity": "alk",
-                        "pH": "ph" // pH के लिए key, JalGanana में नहीं है तो डिफॉल्ट यूज होगा
+                        "pH": "ph" // pH के लिए key जोड़ा, अगर JalGanana में ph के लिए अलग key हो तो अपडेट करो
                     };
                     value = data[keyMap[test.name]] || '';
                     // Whole number में कन्वर्ट करें
@@ -340,7 +341,7 @@ function submitChemicalResults() {
     chemicalResults = [];
     let allValid = true;
     sampleDetails.forEach(sample => {
-        const labNo = sample["Lab No."];
+        const labNo = sample['Lab No.'];
         const entries = {};
         let valid = true;
         document.querySelectorAll(`.chemical-input[data-lab="${labNo}"]`).forEach(input => {
@@ -440,9 +441,9 @@ function populatePreviewTab() {
     const sampleRows = [
         ["1.1", "स्रोत (Source)"].concat(sampleDetails.map(s => s.Source)),
         ["1.2", "स्थान (Location)"].concat(sampleDetails.map(s => s.Location)),
-        ["1.3", "मुख्य नि. नमूने की संख्या (CHI Sample No.)"].concat(sampleDetails.map(s => s["CHI Sample No."])),
+        ["1.3", "मुख्य नि. नमूने की संख्या (CHI Sample No.)"].concat(sampleDetails.map(s => s['CHI Sample No.'])),
         ["1.4", "नमूना संग्रह की तारीख (Date)"].concat(sampleDetails.map(s => s.Date)),
-        ["1.5", "प्रयोगशाला संख्या (Lab No.)"].concat(sampleDetails.map(s => s["Lab No."]))
+        ["1.5", "प्रयोगशाला संख्या (Lab No.)"].concat(sampleDetails.map(s => s['Lab No.']))
     ];
     sampleRows.forEach(row => {
         const tr = sampleTbody.insertRow();
@@ -484,55 +485,64 @@ async function generateFinalReport() {
     for (let i = 0; i < sampleDetails.length; i++) {
         const sample = sampleDetails[i];
         const chemical = chemicalResults[i];
-        const labNo = sample["Lab No."];
+        const labNo = sample['Lab No.'];
         const docId = labNo.replace('/', '-');
         const docRef = doc(collection(totalWaterDb, 'samples'), docId);
         try {
+            console.log('Attempting to save to Firebase for Lab No.:', labNo);
             const existing = await getDoc(docRef);
             if (existing.exists()) {
                 if (!confirm(`Lab No. ${labNo} पहले से मौजूद है। ओवरराइट करें?`)) continue;
             }
-            await setDoc(docRef, { ...sample, ...chemical });
+            await setDoc(docRef, { ...sample, ...chemical, docId: docId });
+            console.log('Successfully saved to Firebase for Lab No.:', labNo);
         } catch (err) {
-            setStatus(` ${labNo} को Total-Water में सेव करने में त्रुटि: ${err.message}. Firebase permissions चेक करें।`, "danger");
+            console.error('Save error for Lab No.', labNo, ':', err);
+            setStatus(` ${labNo} को Total-Water में सेव करने में त्रुटि: ${err.message}. Firebase permissions या auth चेक करें।`, "danger");
             return;
         }
     }
     setStatus("Total-Water Firebase में डेटा सेव हो गया। DOCX जनरेट हो रहा है...", "info");
 
     // DOCX Generation
-    const { Document, Packer, Paragraph, Table, TableRow, TableCell, TextRun, AlignmentType } = docx;
-    const doc = new Document({
-        sections: [{
-            properties: { page: { margin: { top: 720, bottom: 720, left: 1080, right: 1080 } } },
-            children: [
-                new Paragraph({ children: [new TextRun({ text: "उत्तर पश्चिम रेलवे", bold: true, size: 24, font: "Times New Roman" })] , alignment: AlignmentType.CENTER }),
-                new Paragraph({ children: [new TextRun({ text: "कार्यालय\nउप मु.रसा.एवं धातुज्ञ\nकेन्द्रीय प्रयोगशाला, कैरिज, अजमेर", size: 18, font: "Times New Roman" })] , alignment: AlignmentType.RIGHT }),
-                new Paragraph({ children: [new TextRun({ text: `संख्याः सी.एंड एम./सीएल/एफएलडब्ल्यू/वाटर/${formatLabNoRange()}                                                        दिनांक: ${chiDetails.reportDate}`, size: 18, font: "Times New Roman" })] }),
-                new Paragraph({ children: [new TextRun({ text: `${chiDetails.address}`, bold: true, size: 18, font: "Times New Roman" })] }),
-                new Paragraph({ children: [new TextRun({ text: "\t  विषय: पेयजल का रसायनिक विश्लेषण।", size: 18, font: "Times New Roman" })] }),
-                new Paragraph({ children: [new TextRun({ text: `\t  संदर्भ: ${chiDetails.address} का पत्र संख्या ${chiDetails.letterNo}`, size: 18, font: "Times New Roman" })] }),
-                new Paragraph({ children: [new TextRun({ text: "(1) नमूना विवरण (Sample Particulars)", bold: true, size: 18, font: "Times New Roman" })] }),
-                createSampleDocxTable(),
-                new Paragraph({ children: [new TextRun({ text: "(2) रसायनिक विश्लेषण (Chemical Analysis)", bold: true, size: 18, font: "Times New Roman" })] }),
-                createChemicalDocxTable(),
-                new Paragraph({ children: [new TextRun({ text: "टिप्पणी:", size: 18, font: "Times New Roman" })] }),
-                ...generateRemarksDocx(),
-                new Paragraph({ children: [new TextRun({ text: "\nरसायन एवं धातुकर्म अधीक्षक (एफएलडब्ल्यू)\nकेंद्रीय प्रयोगशाला, उ.प.रे., अजमेर", bold: true, size: 18, font: "Times New Roman" })] , alignment: AlignmentType.RIGHT }),
-                new Paragraph({ children: [new TextRun({ text: `प्रतिलिपी: आवश्यक कार्यवाही हेतु - मंडल चिकित्सा अधिकारी (स्वास्थ्य)/${chiDetails.division}`, size: 18, font: "Times New Roman" })] })
-            ]
-        }]
-    });
-    Packer.toBlob(doc).then(blob => {
+    try {
+        console.log('Starting DOCX generation');
+        const { Document, Packer, Paragraph, Table, TableRow, TableCell, TextRun, AlignmentType } = docx;
+        const doc = new Document({
+            sections: [{
+                properties: { page: { margin: { top: 720, bottom: 720, left: 1080, right: 1080 } } },
+                children: [
+                    new Paragraph({ children: [new TextRun({ text: "उत्तर पश्चिम रेलवे", bold: true, size: 24, font: "Times New Roman" })] , alignment: AlignmentType.CENTER }),
+                    new Paragraph({ children: [new TextRun({ text: "कार्यालय\nउप मु.रसा.एवं धातुज्ञ\nकेन्द्रीय प्रयोगशाला, कैरिज, अजमेर", size: 18, font: "Times New Roman" })] , alignment: AlignmentType.RIGHT }),
+                    new Paragraph({ children: [new TextRun({ text: `संख्याः सी.एंड एम./सीएल/एफएलडब्ल्यू/वाटर/${formatLabNoRange()}                                                        दिनांक: ${chiDetails.reportDate}`, size: 18, font: "Times New Roman" })] }),
+                    new Paragraph({ children: [new TextRun({ text: `${chiDetails.address}`, bold: true, size: 18, font: "Times New Roman" })] }),
+                    new Paragraph({ children: [new TextRun({ text: "\t  विषय: पेयजल का रसायनिक विश्लेषण।", size: 18, font: "Times New Roman" })] }),
+                    new Paragraph({ children: [new TextRun({ text: `\t  संदर्भ: ${chiDetails.address} का पत्र संख्या ${chiDetails.letterNo}`, size: 18, font: "Times New Roman" })] }),
+                    new Paragraph({ children: [new TextRun({ text: "(1) नमूना विवरण (Sample Particulars)", bold: true, size: 18, font: "Times New Roman" })] }),
+                    createSampleDocxTable(),
+                    new Paragraph({ children: [new TextRun({ text: "(2) रसायनिक विश्लेषण (Chemical Analysis)", bold: true, size: 18, font: "Times New Roman" })] }),
+                    createChemicalDocxTable(),
+                    new Paragraph({ children: [new TextRun({ text: "टिप्पणी:", size: 18, font: "Times New Roman" })] }),
+                    ...generateRemarksDocx(),
+                    new Paragraph({ children: [new TextRun({ text: "\nरसायन एवं धातुकर्म अधीक्षक (एफएलडब्ल्यू)\nकेंद्रीय प्रयोगशाला, उ.प.रे., अजमेर", bold: true, size: 18, font: "Times New Roman" })] , alignment: AlignmentType.RIGHT }),
+                    new Paragraph({ children: [new TextRun({ text: `प्रतिलिपी: आवश्यक कार्यवाही हेतु - मंडल चिकित्सा अधिकारी (स्वास्थ्य)/${chiDetails.division}`, size: 18, font: "Times New Roman" })] })
+                ]
+            }]
+        });
+        const blob = await Packer.toBlob(doc);
         saveAs(blob, `water_${formatLabNoRange().replace('/', '_')}_${new Date().toISOString().slice(0,10).replace(/-/g,'')}.docx`);
         setStatus("DOCX रिपोर्ट जनरेट और डाउनलोड हो गई!", "success");
-    }).catch(err => setStatus(`DOCX जनरेशन में त्रुटि: ${err.message}`, "danger"));
+        console.log('DOCX generation successful');
+    } catch (err) {
+        console.error('DOCX generation error:', err);
+        setStatus(`DOCX जनरेशन में त्रुटि: ${err.message}. docx.js या FileSaver.js चेक करें।`, "danger");
+    }
 }
 
 function formatLabNoRange() {
     if (sampleDetails.length === 0) return "N/A";
-    const prefixes = sampleDetails.map(s => parseInt(s["Lab No."].split('/')[0]));
-    const year = sampleDetails[0]["Lab No."].split('/')[1];
+    const prefixes = sampleDetails.map(s => parseInt(s['Lab No.'].split('/')[0]));
+    const year = sampleDetails[0]['Lab No.'].split('/')[1];
     const min = Math.min(...prefixes);
     const max = Math.max(...prefixes);
     return min === max ? `${min}/${year}` : `${min}-${max}/${year}`;
@@ -544,9 +554,9 @@ function createSampleDocxTable() {
     const dataRows = [
         ["1.1", "स्रोत (Source)"].concat(sampleDetails.map(s => s.Source)),
         ["1.2", "स्थान (Location)"].concat(sampleDetails.map(s => s.Location)),
-        ["1.3", "मुख्य नि. नमूने की संख्या (CHI Sample No.)"].concat(sampleDetails.map(s => s["CHI Sample No."])),
+        ["1.3", "मुख्य नि. नमूने की संख्या (CHI Sample No.)"].concat(sampleDetails.map(s => s['CHI Sample No.'])),
         ["1.4", "नमूना संग्रह की तारीख (Date)"].concat(sampleDetails.map(s => s.Date)),
-        ["1.5", "प्रयोगशाला संख्या (Lab No.)"].concat(sampleDetails.map(s => s["Lab No."]))
+        ["1.5", "प्रयोगशाला संख्या (Lab No.)"].concat(sampleDetails.map(s => s['Lab No.']))
     ];
     dataRows.forEach(row => {
         rows.push(new TableRow({ children: row.map(cell => new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: cell, size: 18 })] })] })) }));
@@ -555,7 +565,7 @@ function createSampleDocxTable() {
 }
 
 function createChemicalDocxTable() {
-    const headers = ["क.सं.", "परीक्षण (Tests)", "निर्धारित मान (Max)", "निर्धारित मान (Desirable)"].concat(sampleDetails.map(s => s["Lab No."]));
+    const headers = ["क.सं.", "परीक्षण (Tests)", "निर्धारित मान (Max)", "निर्धारित मान (Desirable)"].concat(sampleDetails.map(s => s['Lab No.']));
     const rows = [new TableRow({ children: headers.map(h => new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: h, size: 18 })] })] })) })];
     tests.forEach((test, i) => {
         const row = new TableRow({
