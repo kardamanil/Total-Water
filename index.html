@@ -28,7 +28,9 @@
         const totalWaterAuth = getAuth(totalWaterApp);
         window.totalWaterDb = getFirestore(totalWaterApp);
         signInAnonymously(totalWaterAuth)
-            .then(() => console.log('Total-Water: Anonymous auth successful'))
+            .then(credential => {
+                console.log('Total-Water: Anonymous auth successful, User ID:', credential.user.uid);
+            })
             .catch(err => console.error('Total-Water: Auth error:', err));
 
         // JalGanana Firebase Config
@@ -46,7 +48,9 @@
         const jalGananaAuth = getAuth(jalGananaApp);
         window.jalGananaDb = getFirestore(jalGananaApp);
         signInAnonymously(jalGananaAuth)
-            .then(() => console.log('JalGanana: Anonymous auth successful'))
+            .then(credential => {
+                console.log('JalGanana: Anonymous auth successful, User ID:', credential.user.uid);
+            })
             .catch(err => console.error('JalGanana: Auth error:', err));
     </script>
     <!-- docx.js और FileSaver.js -->
