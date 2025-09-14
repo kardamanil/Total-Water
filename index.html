@@ -12,7 +12,9 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js';
         import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
         import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
-        const firebaseConfig = {
+
+        // Total-Water Firebase Config
+        const totalWaterConfig = {
             apiKey: "AIzaSyCmHdqB4dGNAjtZUs5MjXASdzic3IJ5k5w",
             authDomain: "total-water-cc20d.firebaseapp.com",
             databaseURL: "https://total-water-cc20d-default-rtdb.firebaseio.com",
@@ -22,12 +24,30 @@
             appId: "1:1099058814545:web:70881f25d15de3f14ce270",
             measurementId: "G-3NC2PQ3F16"
         };
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        signInAnonymously(auth)
-            .then(() => console.log('Anonymous auth successful'))
-            .catch(err => console.error('Auth error:', err));
-        window.db = getFirestore(app); // Global for script.js
+        const totalWaterApp = initializeApp(totalWaterConfig, "totalWater");
+        const totalWaterAuth = getAuth(totalWaterApp);
+        window.totalWaterDb = getFirestore(totalWaterApp);
+        signInAnonymously(totalWaterAuth)
+            .then(() => console.log('Total-Water: Anonymous auth successful'))
+            .catch(err => console.error('Total-Water: Auth error:', err));
+
+        // JalGanana Firebase Config
+        const jalGananaConfig = {
+            apiKey: "AIzaSyDSqffmlg33rpMc6a2JUddg9pYQFvR8aXU",
+            authDomain: "labcalc-cee5c.firebaseapp.com",
+            databaseURL: "https://labcalc-cee5c-default-rtdb.firebaseio.com",
+            projectId: "labcalc-cee5c",
+            storageBucket: "labcalc-cee5c.firebasestorage.app",
+            messagingSenderId: "1030109019271",
+            appId: "1:1030109019271:web:e66f263a8a1c003b41cc22",
+            measurementId: "G-R9KDMPJX3S"
+        };
+        const jalGananaApp = initializeApp(jalGananaConfig, "jalGanana");
+        const jalGananaAuth = getAuth(jalGananaApp);
+        window.jalGananaDb = getFirestore(jalGananaApp);
+        signInAnonymously(jalGananaAuth)
+            .then(() => console.log('JalGanana: Anonymous auth successful'))
+            .catch(err => console.error('JalGanana: Auth error:', err));
     </script>
     <!-- docx.js और FileSaver.js -->
     <script src="https://unpkg.com/docx@9.5.1/build/index.js"></script>
