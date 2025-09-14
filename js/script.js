@@ -1,8 +1,9 @@
 // js/script.js - Modular Water Quality Report App (JalGanana style)
 import { getFirestore, collection, doc, getDoc, setDoc, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
 
-// Access global db from index.html
-const db = window.db;
+// Access global DBs from index.html
+const totalWaterDb = window.totalWaterDb; // Total-Water Firebase
+const jalGananaDb = window.jalGananaDb;   // JalGanana Firebase
 
 const tests = [
     { name: "Colour", bilingual_name: "रंग", max_limit: "-", desirable_limit: "Clear" },
@@ -269,7 +270,8 @@ async function populateChemicalResultsTab() {
             const docId = labNo.replace('/', '-');
             let value = '';
             try {
-                const docRef = doc(collection(db, 'samples'), docId);
+                // JalGanana (labcalc-cee5c) से lab_calculations कलेक्शन से डेटा fetch
+                const docRef = doc(collection(jalGananaDb, 'lab_calculations'), docId);
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists()) {
                     const data = docSnap.data();
@@ -279,19 +281,20 @@ async function populateChemicalResultsTab() {
                         "Calcium": "calcium",
                         "Magnesium": "magnesium",
                         "Chloride": "chloride",
-                        "Alkalinity": "alkalinity"
+                        "Alkalinity": "alkalinity",
+                        "pH": "ph" // pH के लिए key जोड़ा, अगर JalGanana में ph के लिए अलग key हो तो अपडेट करो
                     };
                     value = data[keyMap[test.name]] || data[test.name.toLowerCase().replace('.', '_')] || '';
                 } else {
-                    setStatus(`Firebase में ${labNo} के लिए डेटा नहीं मिला। मैनुअल एंट्री सक्षम।`, "warning");
+                    setStatus(`JalGanana (lab_calculations) में ${labNo} के लिए डेटा नहीं मिला। मैनुअल एंट्री सक्षम।`, "warning");
                 }
             } catch (err) {
                 console.error(err);
-                setStatus(`${labNo} के लिए fetch error: ${err.message}. Firebase permissions चेक करें।`, "danger");
+                setStatus(`${labNo} के लिए JalGanana से fetch error: ${err.message}. labcalc-cee5c के Firebase permissions चेक करें।`, "danger");
             }
-            if (test.name === "Colour") value = "Clear";
-            else if (test.name === "Odour") value = "OK";
-            else if (test.name === "Turbidity") value = "NO";
+            if (test.name === "Colour") value = value || "Clear";
+            else if (test.name === "Odour") value = value || "OK";
+            else if (test.name === "Turbidity") value = value || "NO";
             else if (test.name === "pH" && !value) value = '';
             tableHTML += `<td><input type="text" class="form-control chemical-input d-inline-block me-1" data-lab="${labNo}" data-test="${test.name}" value="${value}" oninput="updateFinalAndStatus('${labNo}', '${test.name}', this.value)"></td>
                           <td><input type="text" class="form-control chemical-final d-inline-block me-1" data-lab="${labNo}" data-test="${test.name}" readonly value="${value}"></td>
@@ -302,19 +305,7 @@ async function populateChemicalResultsTab() {
     }
     tableHTML += '</tbody></table>';
     container.innerHTML = tableHTML;
-    setStatus("Chemical Results लोड हो गए। Firebase से TDS, TH, Ca, Mg, Chloride, Alkalinity लाए गए। Colour, Odour, Turbidity, pH के लिए डिफ़ॉल्ट सेट। एडिट करें और स्टेटस चेक करें।", "success");
-
-    // Optional: अगर JalGanana से डेटा fetch करना है (API कॉल, अगर उपलब्ध हो)
-    /*
-    try {
-        const response = await fetch('https://kardamanil.github.io/JalGanana/api_endpoint'); // API अगर है तो
-        const jalGananaData = await response.json();
-        console.log('JalGanana data:', jalGananaData);
-        // डेटा को chemicalResults में मर्ज करो
-    } catch (err) {
-        setStatus('JalGanana से डेटा fetch करने में त्रुटि: ' + err.message, "danger");
-    }
-    */
+    setStatus("Chemical Results लोड हो गए। JalGanana (labcalc-cee5c, lab_calculations) से TDS, TH, Ca, Mg, Chloride, Alkalinity लाए गए। Colour, Odour, Turbidity, pH के लिए डिफ़ॉल्ट सेट। एडिट करें और स्टेटस चेक करें।", "success");
 }
 
 function updateFinalAndStatus(labNo, testName, value) {
@@ -336,7 +327,7 @@ function updateFinalAndStatus(labNo, testName, value) {
 
 function clearChemicalForm() {
     populateChemicalResultsTab();
-    setStatus("Chemical results साफ़ किए गए। डिफ़ॉल्ट और Firebase डेटा बहाल।", "info");
+    setStatus("Chemical results साफ़ किए गए। डिफ़ॉल्ट और JalGanana डेटा बहाल।", "info");
 }
 
 function submitChemicalResults() {
@@ -369,13 +360,13 @@ async function fetchByLabNo() {
     if (!validateLabNo(labNo)) return setStatus("वैध Lab No. दर्ज करें (जैसे, 123/2025)।", "warning");
     const docId = labNo.replace('/', '-');
     try {
-        const docRef = doc(collection(db, 'samples'), docId);
+        const docRef = doc(collection(totalWaterDb, 'samples'), docId);
         const docSnap = await getDoc(docRef);
         queryResults = docSnap.exists() ? [docSnap.data()] : [];
         renderQueryTable();
         setStatus(queryResults.length ? `${labNo} के लिए रिजल्ट मिला।` : `${labNo} के लिए डेटा नहीं मिला।`, queryResults.length ? "success" : "warning");
     } catch (err) {
-        setStatus(`Query error: ${err.message}. Firebase permissions चेक करें।`, "danger");
+        setStatus(`Query error: ${err.message}. Total-Water Firebase permissions चेक करें।`, "danger");
     }
 }
 
@@ -383,13 +374,13 @@ async function fetchBySentBy() {
     const sentBy = document.getElementById('query-sent-by').value.trim();
     if (!sentBy) return setStatus("Sent By दर्ज करें।", "warning");
     try {
-        const q = query(collection(db, 'samples'), where('Sender', '==', sentBy));
+        const q = query(collection(totalWaterDb, 'samples'), where('Sender', '==', sentBy));
         const snapshot = await getDocs(q);
         queryResults = snapshot.empty ? [] : snapshot.docs.map(d => d.data());
         renderQueryTable();
         setStatus(`"${sentBy}" के लिए ${queryResults.length} रिजल्ट मिले।`, "success");
     } catch (err) {
-        setStatus(`Error: ${err.message}. Firebase permissions चेक करें।`, "danger");
+        setStatus(`Error: ${err.message}. Total-Water Firebase permissions चेक करें।`, "danger");
     }
 }
 
@@ -398,13 +389,13 @@ async function fetchBySentByLocation() {
     const location = document.getElementById('query-location').value.trim();
     if (!sentBy || !location) return setStatus("Sent By और Location दोनों दर्ज करें।", "warning");
     try {
-        const q = query(collection(db, 'samples'), where('Sender', '==', sentBy), where('Location', '==', location));
+        const q = query(collection(totalWaterDb, 'samples'), where('Sender', '==', sentBy), where('Location', '==', location));
         const snapshot = await getDocs(q);
         queryResults = snapshot.empty ? [] : snapshot.docs.map(d => d.data());
         renderQueryTable();
         setStatus(`"${sentBy}" + "${location}" के लिए ${queryResults.length} रिजल्ट मिले।`, "success");
     } catch (err) {
-        setStatus(`Error: ${err.message}. Firebase permissions चेक करें।`, "danger");
+        setStatus(`Error: ${err.message}. Total-Water Firebase permissions चेक करें।`, "danger");
     }
 }
 
@@ -437,7 +428,6 @@ function generateQueryPdf() {
 
 // Preview Functions
 function populatePreviewTab() {
-    // Sample Particulars
     const sampleTbody = document.querySelector('#sample-preview-table tbody');
     sampleTbody.innerHTML = '';
     const sampleHeaders = ["क्र.सं.", "विवरण"].concat(sampleDetails.map((_, i) => `(${i+1})`));
@@ -458,7 +448,6 @@ function populatePreviewTab() {
         });
     });
 
-    // Chemical Analysis
     const chemicalTbody = document.querySelector('#chemical-preview-table tbody');
     chemicalTbody.innerHTML = '';
     const chemHeaders = ["क.सं.", "परीक्षण (Tests)", "निर्धारित मान (Max)", "निर्धारित मान (Desirable)"].concat(sampleDetails.map(s => s["Lab No."]));
@@ -485,14 +474,14 @@ function backToChemical() {
 
 // Final Report
 async function generateFinalReport() {
-    if (!confirm("अंतिम DOCX रिपोर्ट जनरेट करें? डेटा Firebase में सेव होगा (overwrite prompt के साथ)।")) return;
-    // Save to Firebase
+    if (!confirm("अंतिम DOCX रिपोर्ट जनरेट करें? डेटा Total-Water Firebase में सेव होगा (overwrite prompt के साथ)।")) return;
+    // Save to Total-Water Firebase
     for (let i = 0; i < sampleDetails.length; i++) {
         const sample = sampleDetails[i];
         const chemical = chemicalResults[i];
         const labNo = sample["Lab No."];
         const docId = labNo.replace('/', '-');
-        const docRef = doc(collection(db, 'samples'), docId);
+        const docRef = doc(collection(totalWaterDb, 'samples'), docId);
         try {
             const existing = await getDoc(docRef);
             if (existing.exists()) {
@@ -500,11 +489,11 @@ async function generateFinalReport() {
             }
             await setDoc(docRef, { ...sample, ...chemical });
         } catch (err) {
-            setStatus(` ${labNo} सेव करने में त्रुटि: ${err.message}. Firebase permissions चेक करें।`, "danger");
+            setStatus(` ${labNo} को Total-Water में सेव करने में त्रुटि: ${err.message}. Firebase permissions चेक करें।`, "danger");
             return;
         }
     }
-    setStatus("Firebase में डेटा सेव हो गया। DOCX जनरेट हो रहा है...", "info");
+    setStatus("Total-Water Firebase में डेटा सेव हो गया। DOCX जनरेट हो रहा है...", "info");
 
     // DOCX Generation
     const { Document, Packer, Paragraph, Table, TableRow, TableCell, TextRun, AlignmentType } = docx;
