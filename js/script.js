@@ -1,5 +1,5 @@
 // js/script.js - Modular Water Quality Report App (JalGanana style)
-import { getFirestore, collection, doc, getDoc, setDoc, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js';
+import { getFirestore, collection, doc, getDoc, setDoc, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
 
 // Access global db from index.html
 const db = window.db;
@@ -287,7 +287,7 @@ async function populateChemicalResultsTab() {
                 }
             } catch (err) {
                 console.error(err);
-                setStatus(`${labNo} के लिए fetch error: ${err.message}`, "danger");
+                setStatus(`${labNo} के लिए fetch error: ${err.message}. Firebase permissions चेक करें।`, "danger");
             }
             if (test.name === "Colour") value = "Clear";
             else if (test.name === "Odour") value = "OK";
@@ -303,6 +303,18 @@ async function populateChemicalResultsTab() {
     tableHTML += '</tbody></table>';
     container.innerHTML = tableHTML;
     setStatus("Chemical Results लोड हो गए। Firebase से TDS, TH, Ca, Mg, Chloride, Alkalinity लाए गए। Colour, Odour, Turbidity, pH के लिए डिफ़ॉल्ट सेट। एडिट करें और स्टेटस चेक करें।", "success");
+
+    // Optional: अगर JalGanana से डेटा fetch करना है (API कॉल, अगर उपलब्ध हो)
+    /*
+    try {
+        const response = await fetch('https://kardamanil.github.io/JalGanana/api_endpoint'); // API अगर है तो
+        const jalGananaData = await response.json();
+        console.log('JalGanana data:', jalGananaData);
+        // डेटा को chemicalResults में मर्ज करो
+    } catch (err) {
+        setStatus('JalGanana से डेटा fetch करने में त्रुटि: ' + err.message, "danger");
+    }
+    */
 }
 
 function updateFinalAndStatus(labNo, testName, value) {
@@ -363,7 +375,7 @@ async function fetchByLabNo() {
         renderQueryTable();
         setStatus(queryResults.length ? `${labNo} के लिए रिजल्ट मिला।` : `${labNo} के लिए डेटा नहीं मिला।`, queryResults.length ? "success" : "warning");
     } catch (err) {
-        setStatus(`Query error: ${err.message}`, "danger");
+        setStatus(`Query error: ${err.message}. Firebase permissions चेक करें।`, "danger");
     }
 }
 
@@ -377,7 +389,7 @@ async function fetchBySentBy() {
         renderQueryTable();
         setStatus(`"${sentBy}" के लिए ${queryResults.length} रिजल्ट मिले।`, "success");
     } catch (err) {
-        setStatus(`Error: ${err.message}`, "danger");
+        setStatus(`Error: ${err.message}. Firebase permissions चेक करें।`, "danger");
     }
 }
 
@@ -392,7 +404,7 @@ async function fetchBySentByLocation() {
         renderQueryTable();
         setStatus(`"${sentBy}" + "${location}" के लिए ${queryResults.length} रिजल्ट मिले।`, "success");
     } catch (err) {
-        setStatus(`Error: ${err.message}`, "danger");
+        setStatus(`Error: ${err.message}. Firebase permissions चेक करें।`, "danger");
     }
 }
 
@@ -488,7 +500,7 @@ async function generateFinalReport() {
             }
             await setDoc(docRef, { ...sample, ...chemical });
         } catch (err) {
-            setStatus(` ${labNo} सेव करने में त्रुटि: ${err.message}`, "danger");
+            setStatus(` ${labNo} सेव करने में त्रुटि: ${err.message}. Firebase permissions चेक करें।`, "danger");
             return;
         }
     }
@@ -601,10 +613,13 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('export-query-pdf').addEventListener('click', generateQueryPdf);
     document.getElementById('generate-final-report').addEventListener('click', generateFinalReport);
     document.getElementById('back-to-chemical').addEventListener('click', backToChemical);
+
+    // Delete बटनों को लिसन करो (deleteSampleEntry फिक्स)
     document.getElementById('sample-entries').addEventListener('click', function(event) {
         if (event.target.closest('.delete-btn')) {
             const btn = event.target.closest('.delete-btn');
             const index = parseInt(btn.dataset.index);
             deleteSampleEntry(index);
         }
+    });
 });
