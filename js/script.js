@@ -277,25 +277,30 @@ async function populateChemicalResultsTab() {
                     const data = docSnap.data();
                     const keyMap = {
                         "TDS": "tds",
-                        "T. Hardness": "t_hardness",
-                        "Calcium": "calcium",
-                        "Magnesium": "magnesium",
-                        "Chloride": "chloride",
-                        "Alkalinity": "alkalinity",
-                        "pH": "ph" // pH के लिए key जोड़ा, अगर JalGanana में ph के लिए अलग key हो तो अपडेट करो
+                        "T. Hardness": "th",
+                        "Calcium": "ca",
+                        "Magnesium": "mg",
+                        "Chloride": "chl",
+                        "Alkalinity": "alk",
+                        "pH": "ph" // pH के लिए key, JalGanana में नहीं है तो डिफॉल्ट यूज होगा
                     };
-                    value = data[keyMap[test.name]] || data[test.name.toLowerCase().replace('.', '_')] || '';
+                    value = data[keyMap[test.name]] || '';
+                    // Whole number में कन्वर्ट करें
+                    if (value && ["TDS", "T. Hardness", "Calcium", "Magnesium", "Chloride", "Alkalinity"].includes(test.name)) {
+                        value = Math.round(parseFloat(value)).toString();
+                    }
                 } else {
-                    setStatus(`JalGanana (lab_calculations) में ${labNo} के लिए डेटा नहीं मिला। मैनुअल एंट्री सक्षम।`, "warning");
+                    setStatus(`JalGanana (lab_calculations) में ${labNo} के लिए डेटा नहीं मिला। मैनुअल एंट्री करें।`, "warning");
                 }
             } catch (err) {
                 console.error(err);
                 setStatus(`${labNo} के लिए JalGanana से fetch error: ${err.message}. labcalc-cee5c के Firebase permissions चेक करें।`, "danger");
             }
+            // डिफॉल्ट वैल्यूज सेट करें
             if (test.name === "Colour") value = value || "Clear";
             else if (test.name === "Odour") value = value || "OK";
             else if (test.name === "Turbidity") value = value || "NO";
-            else if (test.name === "pH" && !value) value = '';
+            else if (test.name === "pH") value = value || "8.0"; // pH डिफॉल्ट 8.0
             tableHTML += `<td><input type="text" class="form-control chemical-input d-inline-block me-1" data-lab="${labNo}" data-test="${test.name}" value="${value}" oninput="updateFinalAndStatus('${labNo}', '${test.name}', this.value)"></td>
                           <td><input type="text" class="form-control chemical-final d-inline-block me-1" data-lab="${labNo}" data-test="${test.name}" readonly value="${value}"></td>
                           <td><span class="chemical-status fw-bold d-inline-block" data-lab="${labNo}" data-test="${test.name}"></span></td>`;
@@ -305,7 +310,7 @@ async function populateChemicalResultsTab() {
     }
     tableHTML += '</tbody></table>';
     container.innerHTML = tableHTML;
-    setStatus("Chemical Results लोड हो गए। JalGanana (labcalc-cee5c, lab_calculations) से TDS, TH, Ca, Mg, Chloride, Alkalinity लाए गए। Colour, Odour, Turbidity, pH के लिए डिफ़ॉल्ट सेट। एडिट करें और स्टेटस चेक करें।", "success");
+    setStatus(`Chemical Results लोड हो गए। JalGanana (labcalc-cee5c, lab_calculations) से TDS (${sampleDetails.map(s => s["Lab No."]).join(', ')}) के लिए डेटा लाए गए। pH डिफॉल्ट 8.0 सेट। Colour, Odour, Turbidity डिफॉल्ट। बाकी फील्ड्स एडिट करें।`, "success");
 }
 
 function updateFinalAndStatus(labNo, testName, value) {
