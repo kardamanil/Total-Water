@@ -601,4 +601,10 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('export-query-pdf').addEventListener('click', generateQueryPdf);
     document.getElementById('generate-final-report').addEventListener('click', generateFinalReport);
     document.getElementById('back-to-chemical').addEventListener('click', backToChemical);
+    document.getElementById('sample-entries').addEventListener('click', function(event) {
+        if (event.target.closest('.delete-btn')) {
+            const btn = event.target.closest('.delete-btn');
+            const index = parseInt(btn.dataset.index);
+            deleteSampleEntry(index);
+        }
 });
