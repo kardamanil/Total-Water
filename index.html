@@ -7,10 +7,11 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Firebase SDK (Module) -->
+    <!-- Firebase SDK (Module, latest version) -->
     <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js';
-        import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js';
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js';
+        import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
+        import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
         const firebaseConfig = {
             apiKey: "AIzaSyCmHdqB4dGNAjtZUs5MjXASdzic3IJ5k5w",
             authDomain: "total-water-cc20d.firebaseapp.com",
@@ -22,6 +23,10 @@
             measurementId: "G-3NC2PQ3F16"
         };
         const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        signInAnonymously(auth)
+            .then(() => console.log('Anonymous auth successful'))
+            .catch(err => console.error('Auth error:', err));
         window.db = getFirestore(app); // Global for script.js
     </script>
     <!-- docx.js और FileSaver.js -->
