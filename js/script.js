@@ -160,7 +160,7 @@ function addSampleEntry(sample = { source: '', location: '', chiSampleNo: '', da
             </div>
         </div>
         <div class="col-md-2 text-end">
-            <button type="button" class="btn btn-danger delete-btn p-2" onclick="deleteSampleEntry(${index})" title="Delete Sample ${index + 1}">
+            <button type="button" class="btn btn-danger delete-btn p-2" data-index="${index}" title="Delete Sample ${index + 1}">
                 <i class="bi bi-x-circle-fill" style="font-size: 1.5rem; color: red;"></i>
             </button>
         </div>
