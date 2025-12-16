@@ -6,12 +6,12 @@ const totalWaterDb = window.totalWaterDb; // Total-Water Firebase
 const jalGananaDb = window.jalGananaDb;   // JalGanana Firebase
 
 const tests = [
-    { name: "Colour", bilingual_name: "रंग", max_limit: "-", desirable_limit: "Clear" },
-    { name: "Odour", bilingual_name: "गंध", max_limit: "-", desirable_limit: "OK" },
-    { name: "Turbidity", bilingual_name: "टर्बिडिटी", max_limit: "5 NTU", desirable_limit: "1 NTU" },
+    { name: "Colour", bilingual_name: "रंग", max_limit: "-", desirable_limit: "-" },
+    { name: "Odour", bilingual_name: "गंध", max_limit: "-", desirable_limit: "-" },
+    { name: "Turbidity", bilingual_name: "टर्बिडिटी", max_limit: "-", desirable_limit: "-" },
     { name: "TDS", bilingual_name: "टीडीएस", max_limit: "2000 mg/l", desirable_limit: "500 mg/l" },
     { name: "pH", bilingual_name: "पीएच", max_limit: "6.5 से 8.5", desirable_limit: "6.5 से 8.5" },
-    { name: "T. Hardness", bilingual_name: "कुल कठोरता", max_limit: "600 mg/l", desirable_limit: "300 mg/l" },
+    { name: "T. Hardness", bilingual_name: "कुल कठोरता", max_limit: "600 mg/l", desirable_limit: "200 mg/l" },
     { name: "Calcium", bilingual_name: "कैल्शियम", max_limit: "200 mg/l", desirable_limit: "75 mg/l" },
     { name: "Magnesium", bilingual_name: "मैग्नीशियम", max_limit: "100 mg/l", desirable_limit: "30 mg/l" },
     { name: "Chloride", bilingual_name: "क्लोराइड", max_limit: "1000 mg/l", desirable_limit: "250 mg/l" },
