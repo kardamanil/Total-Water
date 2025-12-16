@@ -534,11 +534,11 @@ async function generateFinalReport() {
                     new Paragraph({ children: [new TextRun({ text: "\t  विषय: पेयजल का रसायनिक विश्लेषण।", size: 18, font: "Times New Roman" })] }),
                     new Paragraph({ children: [new TextRun({ text: `\t  संदर्भ: ${chiDetails.address} का पत्र संख्या ${chiDetails.letterNo}`, size: 18, font: "Times New Roman" })] }),
                     new Paragraph({ children: [new TextRun({ text: "(1) नमूना विवरण (Sample Particulars)", bold: true, size: 18, font: "Times New Roman" })] }),
-                    createSampleDocxTable(),
+                    createSampleDocxTable({ Table, TableRow, TableCell, Paragraph, TextRun }),
                     new Paragraph({ children: [new TextRun({ text: "(2) रसायनिक विश्लेषण (Chemical Analysis)", bold: true, size: 18, font: "Times New Roman" })] }),
-                    createChemicalDocxTable(),
+                    createChemicalDocxTable({ Table, TableRow, TableCell, Paragraph, TextRun }),
                     new Paragraph({ children: [new TextRun({ text: "टिप्पणी:", size: 18, font: "Times New Roman" })] }),
-                    ...generateRemarksDocx(),
+                    ...generateRemarksDocx({ Paragraph, TextRun }),
                     new Paragraph({ children: [new TextRun({ text: "\nरसायन एवं धातुकर्म अधीक्षक (एफएलडब्ल्यू)\nकेंद्रीय प्रयोगशाला, उ.प.रे., अजमेर", bold: true, size: 18, font: "Times New Roman" })] , alignment: AlignmentType.RIGHT }),
                     new Paragraph({ children: [new TextRun({ text: `प्रतिलिपी: आवश्यक कार्यवाही हेतु - मंडल चिकित्सा अधिकारी (स्वास्थ्य)/${chiDetails.division}`, size: 18, font: "Times New Roman" })] })
                 ]
@@ -562,10 +562,22 @@ function formatLabNoRange() {
     const max = Math.max(...prefixes);
     return min === max ? `${min}/${year}` : `${min}-${max}/${year}`;
 }
-
-function createSampleDocxTable() {
+function createSampleDocxTable({ Table, TableRow, TableCell, Paragraph, TextRun }) {
     const headers = ["क्र.सं.", "विवरण"].concat(sampleDetails.map((_, i) => `(${i+1})`));
-    const rows = [new TableRow({ children: headers.map(h => new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: h, size: 18 })] })] })) })];
+    const rows = [
+        new TableRow({
+            children: headers.map(h =>
+                new TableCell({
+                    children: [
+                        new Paragraph({
+                            children: [new TextRun({ text: h, size: 18 })]
+                        })
+                    ]
+                })
+            )
+        })
+    ];
+
     const dataRows = [
         ["1.1", "स्रोत (Source)"].concat(sampleDetails.map(s => s.Source)),
         ["1.2", "स्थान (Location)"].concat(sampleDetails.map(s => s.Location)),
@@ -573,47 +585,112 @@ function createSampleDocxTable() {
         ["1.4", "नमूना संग्रह की तारीख (Date)"].concat(sampleDetails.map(s => s.Date)),
         ["1.5", "प्रयोगशाला संख्या (Lab No.)"].concat(sampleDetails.map(s => s['Lab No.']))
     ];
+
     dataRows.forEach(row => {
-        rows.push(new TableRow({ children: row.map(cell => new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: cell, size: 18 })] })] })) }));
+        rows.push(
+            new TableRow({
+                children: row.map(cell =>
+                    new TableCell({
+                        children: [
+                            new Paragraph({
+                                children: [new TextRun({ text: cell, size: 18 })]
+                            })
+                        ]
+                    })
+                )
+            })
+        );
     });
+
     return new Table({ rows });
 }
 
-function createChemicalDocxTable() {
-    const headers = ["क.सं.", "परीक्षण (Tests)", "निर्धारित मान (Max)", "निर्धारित मान (Desirable)"].concat(sampleDetails.map(s => s['Lab No.']));
-    const rows = [new TableRow({ children: headers.map(h => new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: h, size: 18 })] })] })) })];
+function createChemicalDocxTable({ Table, TableRow, TableCell, Paragraph, TextRun }) {
+    const headers = ["क.सं.", "परीक्षण (Tests)", "निर्धारित मान (Max)", "निर्धारित मान (Desirable)"]
+        .concat(sampleDetails.map(s => s['Lab No.']));
+
+    const rows = [
+        new TableRow({
+            children: headers.map(h =>
+                new TableCell({
+                    children: [
+                        new Paragraph({
+                            children: [new TextRun({ text: h, size: 18 })]
+                        })
+                    ]
+                })
+            )
+        })
+    ];
+
     tests.forEach((test, i) => {
         const row = new TableRow({
             children: [
-                new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: `2.${i+1}`, size: 18 })] })] }),
-                new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: `${test.name} (${test.bilingual_name})`, size: 18 })] })] }),
-                new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: test.max_limit, size: 18 })] })] }),
-                new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: test.desirable_limit, size: 18 })] })] }),
-                ...chemicalResults.map(r => new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: r[test.name] || '-', size: 18 })] })] }))
+                new TableCell({
+                    children: [new Paragraph({ children: [new TextRun({ text: `2.${i+1}`, size: 18 })] })]
+                }),
+                new TableCell({
+                    children: [new Paragraph({ children: [new TextRun({ text: `${test.name} (${test.bilingual_name})`, size: 18 })] })]
+                }),
+                new TableCell({
+                    children: [new Paragraph({ children: [new TextRun({ text: test.max_limit, size: 18 })] })]
+                }),
+                new TableCell({
+                    children: [new Paragraph({ children: [new TextRun({ text: test.desirable_limit, size: 18 })] })]
+                }),
+                ...chemicalResults.map(r =>
+                    new TableCell({
+                        children: [
+                            new Paragraph({
+                                children: [new TextRun({ text: r[test.name] || '-', size: 18 })]
+                            })
+                        ]
+                    })
+                )
             ]
         });
         rows.push(row);
     });
+
     return new Table({ rows });
 }
 
-function generateRemarksDocx() {
+
+function generateRemarksDocx({ Paragraph, TextRun }) {
     const remarks = [];
     chemicalResults.forEach((result, i) => {
         const labNo = result["Lab No."];
         let allDesirable = true;
         let hasPermissible = false;
+
         tests.forEach(test => {
             const value = result[test.name];
             const category = categorizeSample(test.name, value, test.max_limit, test.desirable_limit);
             if (category === "unsuitable" || category === "invalid") allDesirable = false;
             if (category === "permissible") hasPermissible = true;
         });
-        const status = allDesirable ? "पेयजल के लिए उपयुक्त" : hasPermissible ? "पेयजल के लिए स्वीकार्य" : "पेयजल के लिए अनुपयुक्त";
-        remarks.push(new Paragraph({ children: [new TextRun({ text: `Sample ${i+1} (${labNo}): ${status}`, size: 18, font: "Times New Roman" })] }));
+
+        const status = allDesirable
+            ? "पेयजल के लिए उपयुक्त"
+            : hasPermissible
+                ? "पेयजल के लिए स्वीकार्य"
+                : "पेयजल के लिए अनुपयुक्त";
+
+        remarks.push(
+            new Paragraph({
+                children: [
+                    new TextRun({
+                        text: `Sample ${i + 1} (${labNo}): ${status}`,
+                        size: 18,
+                        font: "Times New Roman"
+                    })
+                ]
+            })
+        );
     });
     return remarks;
 }
+
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
