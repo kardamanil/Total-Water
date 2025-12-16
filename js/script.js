@@ -54,8 +54,8 @@ function categorizeSample(testName, result, maxLimit, desLimit) {
             if (val < desLow || val > desHigh) return "permissible";
             return "suitable";
         } else {
-            const maxVal = parseFloat(maxLimit.replace(/ mg\/l| NTU/g, '')) || Infinity;
-            const desVal = parseFloat(desLimit.replace(/ mg\/l| NTU/g, '')) || Infinity;
+            const maxVal = parseFloat(maxLimit.replace(/ mg\/l| -/g, '')) || Infinity;
+            const desVal = parseFloat(desLimit.replace(/ mg\/l| -/g, '')) || Infinity;
             if (val > maxVal) return "unsuitable";
             if (val > desVal) return "permissible";
             return "suitable";
