@@ -506,8 +506,23 @@ async function generateFinalReport() {
 
     // DOCX Generation
     try {
+        if (typeof window.docx === "undefined") {
+            setStatus("docx.js load नहीं हुआ। Internet connection या script link चेक करें।", "danger");
+            return;
+        }
+        const {
+            Document,
+            Packer,
+            Paragraph,
+            Table,
+            TableRow,
+            TableCell,
+            TextRun,
+            AlignmentType
+        } = window.docx;
+        
         console.log('Starting DOCX generation');
-        const { Document, Packer, Paragraph, Table, TableRow, TableCell, TextRun, AlignmentType } = docx;
+        
         const doc = new Document({
             sections: [{
                 properties: { page: { margin: { top: 720, bottom: 720, left: 1080, right: 1080 } } },
