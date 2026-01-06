@@ -527,7 +527,7 @@ async function generateFinalReport() {
             sections: [{
                 properties: { page: { margin: { top: 720, bottom: 720, left: 1080, right: 1080 } } },
                 children: [
-                    new Paragraph({ children: [new TextRun({ text: "उत्तर पश्चिम रेलवे", bold: true, size: 24, font: "Arial Unicode MS" })] , alignment: AlignmentType.CENTER }),
+                    new Paragraph({ children: [new TextRun({ text: "उत्तर पश्चिम रेलवे", bold: true, size: 24, font: "Times New Roman" })] , alignment: AlignmentType.CENTER }),
                     new Paragraph({ children: [new TextRun({ text: "कार्यालय", size: 18, font: "Times New Roman" })] , alignment: AlignmentType.RIGHT }),
                     new Paragraph({ children: [new TextRun({ text: "उप मु.रसा.एवं धातुज्", size: 18, font: "Times New Roman" })] , alignment: AlignmentType.RIGHT }),
                     new Paragraph({ children: [new TextRun({ text: "केन्द्रीय प्रयोगशाला, कैरिज, अजमेर", size: 18, font: "Times New Roman" })] , alignment: AlignmentType.RIGHT }),
@@ -544,7 +544,11 @@ async function generateFinalReport() {
                     createChemicalDocxTable({ Table, TableRow, TableCell, Paragraph, TextRun }),
                     new Paragraph({ children: [new TextRun({ text: "टिप्पणी:", size: 18, font: "Times New Roman" })] }),
                     ...generateRemarksDocx({ Paragraph, TextRun }),
-                    new Paragraph({ children: [new TextRun({ text: "\nरसायन एवं धातुकर्म अधीक्षक (एफएलडब्ल्यू)\nकेंद्रीय प्रयोगशाला, उ.प.रे., अजमेर", bold: true, size: 18, font: "Times New Roman" })] , alignment: AlignmentType.RIGHT }),
+                    
+                    new Paragraph({ children: [new TextRun({ text: "\n(अनिल कुमार कर्दम)", bold: true, size: 18, font: "Times New Roman" })] , alignment: AlignmentType.RIGHT }),
+                    new Paragraph({ children: [new TextRun({ text: "\nरसायन एवं धातुकर्म अधीक्षक (एफएलडब्ल्यू)", bold: true, size: 18, font: "Times New Roman" })] , alignment: AlignmentType.RIGHT }),
+                    new Paragraph({ children: [new TextRun({ text: "\nकेंद्रीय प्रयोगशाला, उ.प.रे., अजमेर", bold: true, size: 18, font: "Times New Roman" })] , alignment: AlignmentType.RIGHT }),
+                    
                     new Paragraph({ children: [new TextRun({ text: `प्रतिलिपी: आवश्यक कार्यवाही हेतु - मंडल चिकित्सा अधिकारी (स्वास्थ्य)/${chiDetails.division}`, size: 18, font: "Times New Roman" })] })
                 ]
             }]
