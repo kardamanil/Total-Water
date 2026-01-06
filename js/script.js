@@ -664,41 +664,101 @@ function createChemicalDocxTable({ Table, TableRow, TableCell, Paragraph, TextRu
     return new Table({ rows });
 }
 
-
 function generateRemarksDocx({ Paragraph, TextRun }) {
-    const remarks = [];
-    chemicalResults.forEach((result, i) => {
+    const failedLabs = [];          // (unsuitable / invalid)
+    const permissibleOnlyLabs = []; // (permissible, but no fail)
+    const desirableLabs = [];       // (all desirable)
+
+    chemicalResults.forEach((result) => {
         const labNo = result["Lab No."];
-        let allDesirable = true;
+        let hasUnsuitableOrInvalid = false;
         let hasPermissible = false;
+        let allDesirable = true;
 
         tests.forEach(test => {
             const value = result[test.name];
-            const category = categorizeSample(test.name, value, test.max_limit, test.desirable_limit);
-            if (category === "unsuitable" || category === "invalid") allDesirable = false;
-            if (category === "permissible") hasPermissible = true;
+            const category = categorizeSample(
+                test.name,
+                value,
+                test.max_limit,
+                test.desirable_limit
+            );
+
+            if (category === "unsuitable" || category === "invalid") {
+                hasUnsuitableOrInvalid = true;
+                allDesirable = false;
+            } else if (category === "permissible") {
+                hasPermissible = true;
+                allDesirable = false;
+            }
         });
 
-        const status = allDesirable
-            ? "पेयजल के लिए उपयुक्त"
-            : hasPermissible
-                ? "पेयजल के लिए स्वीकार्य"
-                : "पेयजल के लिए अनुपयुक्त";
+        if (hasUnsuitableOrInvalid) {
+            failedLabs.push(labNo);
+        } else if (hasPermissible) {
+            permissibleOnlyLabs.push(labNo);
+        } else if (allDesirable) {
+            desirableLabs.push(labNo);
+        }
+    });
 
+    const remarks = [];
+    let lineNo = 1;
+
+    // fail group
+    if (failedLabs.length > 0) {
+        const text = `(${lineNo}) नमूना प्रयोगशाला संख्या ${failedLabs.join(", ")} अधिकतम अनुमेय श्रेणी की निर्धारित आवश्यकताओं की पूर्ति नहीं करता है, अतः यह उपयुक्त नहीं है।`;
         remarks.push(
             new Paragraph({
                 children: [
                     new TextRun({
-                        text: `Sample ${i + 1} (${labNo}): ${status}`,
+                        text: text,
                         size: 18,
                         font: "Times New Roman"
                     })
                 ]
             })
         );
-    });
+        lineNo++;
+    }
+
+    // permissible-only group
+    if (permissibleOnlyLabs.length > 0) {
+        const text = `(${lineNo}) नमूना प्रयोगशाला संख्या ${permissibleOnlyLabs.join(", ")} उच्चतम अभीष्ट श्रेणी की निर्दिष्ट आवश्यकताओं की पूर्ति नहीं करता है किन्तु अधिकतम अनुज्ञेय श्रेणी के निर्दिष्ट आवश्यकताओं की पूर्ति करता हैं अत: उच्चतर वैकल्पिक स्त्रोत के अभाव में जल का उपयोग कर सकते हैं और क्षेत्र में उपलब्ध जल की सामान्य विशिष्टताओ के आधार पर जल को साधारणतया स्वीकृत किया जा सकता है।`;
+        remarks.push(
+            new Paragraph({
+                children: [
+                    new TextRun({
+                        text: text,
+                        size: 18,
+                        font: "Times New Roman"
+                    })
+                ]
+            })
+        );
+        lineNo++;
+    }
+
+    // all-desirable group
+    if (desirableLabs.length > 0) {
+        const text = `(${lineNo}) नमूना प्रयोगशाला संख्या ${desirableLabs.join(", ")} उच्चतम अभीष्ट श्रेणी की निर्धारित आवश्यकताओं की पूर्ति करता है, अतः उपयुक्त है।`;
+        remarks.push(
+            new Paragraph({
+                children: [
+                    new TextRun({
+                        text: text,
+                        size: 18,
+                        font: "Times New Roman"
+                    })
+                ]
+            })
+        );
+    }
+
     return remarks;
 }
+
+
 
 
 // Event Listeners
