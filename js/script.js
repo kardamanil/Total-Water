@@ -529,7 +529,7 @@ async function generateFinalReport() {
                 children: [
                     new Paragraph({ children: [new TextRun({ text: "उत्तर पश्चिम रेलवे", bold: true, size: 24, font: "Times New Roman" })] , alignment: AlignmentType.CENTER }),
                     new Paragraph({ children: [new TextRun({ text: "कार्यालय", size: 18, font: "Times New Roman" })] , alignment: AlignmentType.RIGHT }),
-                    new Paragraph({ children: [new TextRun({ text: "उप मु.रसा.एवं धातुज्", size: 18, font: "Times New Roman" })] , alignment: AlignmentType.RIGHT }),
+                    new Paragraph({ children: [new TextRun({ text: "उप मु. रसा. एवं धातुज्ञ", size: 18, font: "Times New Roman" })] , alignment: AlignmentType.RIGHT }),
                     new Paragraph({ children: [new TextRun({ text: "केन्द्रीय प्रयोगशाला, कैरिज, अजमेर", size: 18, font: "Times New Roman" })] , alignment: AlignmentType.RIGHT }),
                                         
                     new Paragraph({ children: [new TextRun({ text: `संख्याः सी.एंड एम./सीएल/एफएलडब्ल्यू/वाटर/${formatLabNoRange()}                                                        दिनांक: ${chiDetails.reportDate}`, size: 18, font: "Times New Roman" })] }),
