@@ -527,7 +527,7 @@ async function generateFinalReport() {
             sections: [{
                 properties: { page: { margin: { top: 720, bottom: 720, left: 1080, right: 1080 } } },
                 children: [
-                    new Paragraph({ children: [new TextRun({ text: "उत्तर पश्चिम रेलवे", bold: true, size: 24, font: "Times New Roman" })] , alignment: AlignmentType.CENTER }),
+                    new Paragraph({ children: [new TextRun({ text: "उत्तर पश्चिम रेलवे", bold: true, size: 24, font: "Arial Unicode MS" })] , alignment: AlignmentType.CENTER }),
                     new Paragraph({ children: [new TextRun({ text: "कार्यालय\nउप मु.रसा.एवं धातुज्ञ\nकेन्द्रीय प्रयोगशाला, कैरिज, अजमेर", size: 18, font: "Times New Roman" })] , alignment: AlignmentType.RIGHT }),
                     new Paragraph({ children: [new TextRun({ text: `संख्याः सी.एंड एम./सीएल/एफएलडब्ल्यू/वाटर/${formatLabNoRange()}                                                        दिनांक: ${chiDetails.reportDate}`, size: 18, font: "Times New Roman" })] }),
                     new Paragraph({ children: [new TextRun({ text: `${chiDetails.address}`, bold: true, size: 18, font: "Times New Roman" })] }),
