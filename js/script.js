@@ -590,7 +590,7 @@ function createSampleDocxTable({ Table, TableRow, TableCell, Paragraph, TextRun 
     const dataRows = [
         ["1.1", "स्रोत (Source)"].concat(sampleDetails.map(s => s.Source)),
         ["1.2", "स्थान (Location)"].concat(sampleDetails.map(s => s.Location)),
-        ["1.3", "मुख्य नि. नमूने की संख्या (CHI Sample No.)"].concat(sampleDetails.map(s => s['CHI Sample No.'])),
+        ["1.3", "सीएचआई नमूना सं. (CHI Sample No.)"].concat(sampleDetails.map(s => s['CHI Sample No.'])),
         ["1.4", "नमूना संग्रह की तारीख (Date)"].concat(sampleDetails.map(s => s.Date)),
         ["1.5", "प्रयोगशाला संख्या (Lab No.)"].concat(sampleDetails.map(s => s['Lab No.']))
     ];
@@ -615,7 +615,7 @@ function createSampleDocxTable({ Table, TableRow, TableCell, Paragraph, TextRun 
 }
 
 function createChemicalDocxTable({ Table, TableRow, TableCell, Paragraph, TextRun }) {
-    const headers = ["क.सं.", "परीक्षण (Tests)", "निर्धारित मान (Max)", "निर्धारित मान (Desirable)"]
+    const headers = ["क्र.सं.", "परीक्षण (Tests)", "निर्धारित मान (Max)", "निर्धारित मान (Desirable)"]
         .concat(sampleDetails.map(s => s['Lab No.']));
 
     const rows = [
