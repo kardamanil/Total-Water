@@ -615,22 +615,52 @@ function createSampleDocxTable({ Table, TableRow, TableCell, Paragraph, TextRun 
 }
 
 function createChemicalDocxTable({ Table, TableRow, TableCell, Paragraph, TextRun }) {
-    const headers = ["क्र.सं.", "परीक्षण (Tests)", "निर्धारित मान (Max)", "निर्धारित मान (Desirable)"]
-        .concat(sampleDetails.map(s => s['Lab No.']));
+    const sampleCount = sampleDetails.length;
 
-    const rows = [
-        new TableRow({
-            children: headers.map(h =>
-                new TableCell({
-                    children: [
-                        new Paragraph({
-                            children: [new TextRun({ text: h, size: 18 })]
-                        })
-                    ]
-                })
-            )
-        })
-    ];
+const topHeaderRow = new TableRow({
+  children: [
+    new TableCell({
+      rowSpan: 2,
+      children: [new Paragraph({ children: [new TextRun({ text: "क्र.सं.", size: 18 })] })]
+    }),
+    new TableCell({
+      rowSpan: 2,
+      children: [new Paragraph({ children: [new TextRun({ text: "परीक्षण (Tests)", size: 18 })] })]
+    }),
+    new TableCell({
+      columnSpan: 2,
+      children: [new Paragraph({ children: [new TextRun({ text: "IS 10500:2012", size: 18 })] })]
+    }),
+    new TableCell({
+      columnSpan: sampleCount,
+      children: [new Paragraph({ children: [new TextRun({ text: "Result", size: 18 })] })]
+    })
+  ]
+});
+
+const secondHeaderCells = [
+  new TableCell({
+    children: [new Paragraph({ children: [new TextRun({ text: "निर्धारित मान (Max)", size: 18 })] })]
+  }),
+  new TableCell({
+    children: [new Paragraph({ children: [new TextRun({ text: "निर्धारित मान (Desirable)", size: 18 })] })]
+  })
+];
+
+sampleDetails.forEach(s => {
+  secondHeaderCells.push(
+    new TableCell({
+      children: [new Paragraph({ children: [new TextRun({ text: s["Lab No."], size: 18 })] })]
+    })
+  );
+});
+
+const secondHeaderRow = new TableRow({
+  children: secondHeaderCells
+});
+
+const rows = [topHeaderRow, secondHeaderRow];
+
 
     tests.forEach((test, i) => {
         const row = new TableRow({
