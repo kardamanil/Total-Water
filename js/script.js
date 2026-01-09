@@ -316,9 +316,12 @@ async function loadSamplesFromGoogle() {
 
         const headers = lines[0].split(',');
         const required = ['Source', 'Location', 'CHI Sample No.', 'Date', 'Lab No.', 'Sender'];
-        if (!required.every(h => headers.some(head => head.trim() === h))) {
-            return setStatus('Google Sheet Sample CSV must have: ' + required.join(', '), 'danger');
-        }
+        
+        // Flexible header matching
+        const headerMap = {};
+        headers.forEach(h => {
+        const cleanHeader
+
 
         sampleDetails = [];
         document.getElementById('sample-entries').innerHTML = '';
