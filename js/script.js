@@ -126,6 +126,10 @@ function loadChiCsv() {
     };
     reader.readAsText(file, 'UTF-8');
 }
+
+
+
+
 // Load CHI from Google Sheet (same format as CHI CSV)
 async function loadChiFromGoogle() {
     const sheetSelect = document.getElementById('chi-sheet-select');
@@ -145,7 +149,12 @@ async function loadChiFromGoogle() {
         const headers = lines[0].split(',');
         const row = lines[1].split(',');
         const data = {};
-        headers.forEach((h, i) => data[h.trim()] = row[i]?.trim());
+        
+        headers.forEach((h, i) => {
+            const cleanKey = h.trim().replace(/['"]/g, '');
+            const cleanValue = row[i]?.trim().replace(/['"]/g, '') || '';
+            data[cleanKey] = cleanValue;
+        });
 
         const allowedDivisions = ['अजमेर', 'जोधपुर', 'जयपुर', 'बीकानेर'];
         
