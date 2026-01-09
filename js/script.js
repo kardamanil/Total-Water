@@ -125,6 +125,46 @@ function loadChiCsv() {
     };
     reader.readAsText(file, 'UTF-8');
 }
+// Load CHI from Google Sheet (same format as CHI CSV)
+async function loadChiFromGoogle() {
+    const sheetSelect = document.getElementById('chi-sheet-select');
+    const sheetName = sheetSelect ? sheetSelect.value : '';
+    if (!sheetName) {
+        return setStatus('Please select a CHI sheet from dropdown.', 'warning');
+    }
+    try {
+        setStatus('Loading CHI from Google Sheet: ' + sheetName, 'info');
+
+        const csvText = await fetchSheetCsv(sheetName); // helper from step 2
+        const lines = csvText.split('\n').filter(line => line.trim());
+        if (lines.length < 2) {
+            return setStatus('Google Sheet CHI CSV format invalid (need header + at least 1 row).', 'danger');
+        }
+
+        const headers = lines[0].split(',');
+        const row = lines[1].split(',');
+        const data = {};
+        headers.forEach((h, i) => data[h.trim()] = row[i]?.trim());
+
+        const allowedDivisions = ['अजमेर', 'जोधपुर', 'जयपुर', 'बीकानेर'];
+        if (!data['CHI Letter No.'] ||
+            !data['CHI Address'] ||
+            !allowedDivisions.includes(data['Division']) ||
+            !validateDate(data['Report Date'])) {
+            return setStatus('Google Sheet CHI CSV must contain valid CHI Letter No., Address, Division, Report Date.', 'danger');
+        }
+
+        document.getElementById('chi-letter-no').value = data['CHI Letter No.'];
+        document.getElementById('chi-address').value = data['CHI Address'];
+        document.getElementById('chi-division').value = data['Division'];
+        document.getElementById('report-date').value = data['Report Date'];
+
+        setStatus('CHI loaded from Google Sheet successfully.', 'success');
+    } catch (err) {
+        console.error(err);
+        setStatus('Error loading CHI from Google Sheet: ' + err.message, 'danger');
+    }
+}
 
 function clearChiForm() {
     document.getElementById('chi-letter-no').value = '';
@@ -238,6 +278,69 @@ function loadSampleCsv() {
         setStatus(`${loaded} सैंपल CSV से लोड हुए (अधिकतम ${maxLoaded})। आप इन्हें एडिट या डिलीट कर सकते हैं।`, "success");
     };
     reader.readAsText(file, 'UTF-8');
+}
+// Load Samples from Google Sheet (same format as Sample CSV)
+async function loadSamplesFromGoogle() {
+    const sheetSelect = document.getElementById('sample-sheet-select');
+    const sheetName = sheetSelect ? sheetSelect.value : '';
+    const filterSampleNo = document.getElementById('sample-no-filter')?.value.trim() || '';
+
+    if (!sheetName) {
+        return setStatus('Please select a Sample sheet from dropdown.', 'warning');
+    }
+
+    try {
+        setStatus('Loading samples from Google Sheet: ' + sheetName, 'info');
+
+        let url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
+        if (filterSampleNo) {
+            // मान लो "CHI Sample No." column A me hai
+            const tq = `select * where A = '${filterSampleNo.replace(/'/g, "\\'")}'`;
+            url += `&tq=${encodeURIComponent(tq)}`;
+        }
+
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('Google Sheet fetch error: ' + res.status);
+        const csvText = await res.text();
+
+        const lines = csvText.split('\n').filter(l => l.trim());
+        if (lines.length < 2) {
+            return setStatus('No sample data found in Google Sheet (check filter / sheet).', 'warning');
+        }
+
+        const headers = lines[0].split(',');
+        const required = ['Source', 'Location', 'CHI Sample No.', 'Date', 'Lab No.', 'Sender'];
+        if (!required.every(h => headers.some(head => head.trim() === h))) {
+            return setStatus('Google Sheet Sample CSV must have: ' + required.join(', '), 'danger');
+        }
+
+        sampleDetails = [];
+        document.getElementById('sample-entries').innerHTML = '';
+        let loaded = 0;
+
+        for (let i = 1; i < lines.length; i++) {
+            const row = lines[i].split(',');
+            const data = {};
+            headers.forEach((h, j) => data[h.trim()] = row[j]?.trim());
+
+            if (validateDate(data['Date']) && validateLabNo(data['Lab No.'])) {
+                addSampleEntry({
+                    Source: data['Source'],
+                    Location: data['Location'],
+                    'CHI Sample No.': data['CHI Sample No.'],
+                    Date: data['Date'],
+                    'Lab No.': data['Lab No.'],
+                    Sender: data['Sender']
+                }, sampleDetails.length);
+                loaded++;
+            }
+        }
+
+        setStatus(`Loaded ${loaded} sample(s) from Google Sheet.`, 'success');
+    } catch (err) {
+        console.error(err);
+        setStatus('Error loading samples from Google Sheet: ' + err.message, 'danger');
+    }
 }
 
 function deleteSampleEntry(index) {
@@ -834,6 +937,41 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('export-query-pdf').addEventListener('click', generateQueryPdf);
     document.getElementById('generate-final-report').addEventListener('click', generateFinalReport);
     document.getElementById('back-to-chemical').addEventListener('click', backToChemical);
+    // NEW: Google buttons
+    const chiGoogleBtn = document.getElementById('load-chi-google');
+    const sampleGoogleBtn = document.getElementById('load-sample-google');
+    if (chiGoogleBtn) chiGoogleBtn.addEventListener('click', loadChiFromGoogle);
+    if (sampleGoogleBtn) sampleGoogleBtn.addEventListener('click', loadSamplesFromGoogle);
+
+    // NEW: Populate dropdowns from Sheets API
+    fetchAllSheetNames().then(names => {
+        const chiSheets = names.filter(n => n.endsWith('_chi'));
+        const sampleSheets = names.filter(n => n.endsWith('_samples'));
+
+        const chiSelect = document.getElementById('chi-sheet-select');
+        const sampleSelect = document.getElementById('sample-sheet-select');
+
+        if (chiSelect) {
+            chiSheets.forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = name;
+                opt.textContent = name;
+                chiSelect.appendChild(opt);
+            });
+        }
+        if (sampleSelect) {
+            sampleSheets.forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = name;
+                opt.textContent = name;
+                sampleSelect.appendChild(opt);
+            });
+        }
+    }).catch(err => {
+        console.error('Sheet list error:', err);
+        setStatus('Warning: Could not load Google Sheet list. CSV upload will still work.', 'warning');
+    });
+});
 
     // Delete बटनों को लिसन करो (deleteSampleEntry फिक्स)
     document.getElementById('sample-entries').addEventListener('click', function(event) {
