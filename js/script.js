@@ -309,8 +309,8 @@ async function loadSamplesFromGoogle() {
 
         let url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
         if (filterSampleNo) {
-            // मान लो "CHI Sample No." column A me hai
-            const tq = `select * where A = '${filterSampleNo.replace(/'/g, "\\'")}'`;
+            //  "Lab No.  column E me hai
+            const tq = `select * where E = '${filterSampleNo.replace(/'/g, "\\'")}'`;
             url += `&tq=${encodeURIComponent(tq)}`;
         }
 
