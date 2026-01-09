@@ -315,12 +315,12 @@ async function loadSamplesFromGoogle() {
         }
 
         const headers = lines[0].split(',');
-        const required = ['Source', 'Location', 'CHI Sample No.', 'Date', 'Lab No.', 'Sender'];
-        
-        // Flexible header matching
-        const headerMap = {};
-        headers.forEach(h => {
-        const cleanHeader
+        // Flexible header matching - spaces aur quotes ignore करो
+const headerMap = {};
+headers.forEach((h, index) => {
+    const cleanHeader = h.trim().replace(/['"]/g, '').replace(/\s+/g, ' ');
+    headerMap[cleanHeader]
+
 
 
         sampleDetails = [];
