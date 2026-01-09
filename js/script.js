@@ -937,6 +937,10 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('export-query-pdf').addEventListener('click', generateQueryPdf);
     document.getElementById('generate-final-report').addEventListener('click', generateFinalReport);
     document.getElementById('back-to-chemical').addEventListener('click', backToChemical);
+
+    
+    
+    
     // NEW: Google buttons
     const chiGoogleBtn = document.getElementById('load-chi-google');
     const sampleGoogleBtn = document.getElementById('load-sample-google');
