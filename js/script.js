@@ -976,7 +976,6 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('Sheet list error:', err);
         setStatus('Warning: Could not load Google Sheet list. CSV upload will still work.', 'warning');
     });
-});
 
     // Delete बटनों को लिसन करो (deleteSampleEntry फिक्स)
     document.getElementById('sample-entries').addEventListener('click', function(event) {
