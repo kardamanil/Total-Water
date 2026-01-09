@@ -319,7 +319,8 @@ async function loadSamplesFromGoogle() {
 const headerMap = {};
 headers.forEach((h, index) => {
     const cleanHeader = h.trim().replace(/['"]/g, '').replace(/\s+/g, ' ');
-    headerMap[cleanHeader]
+    headerMap[cleanHeader]=index;
+})
 
 
 
@@ -330,7 +331,11 @@ headers.forEach((h, index) => {
         for (let i = 1; i < lines.length; i++) {
             const row = lines[i].split(',');
             const data = {};
-            headers.forEach((h, j) => data[h.trim()] = row[j]?.trim());
+            headers.forEach((h, j) => {
+                // Quotes hata kar data map kar rahe hain
+                const cleanKey = h.trim().replace(/['"]/g, '');
+                data[cleanKey] = row[j]?.replace(/['"]/g, '').trim();
+            });
 
             if (validateDate(data['Date']) && validateLabNo(data['Lab No.'])) {
                 addSampleEntry({
