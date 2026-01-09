@@ -6,16 +6,16 @@ const totalWaterDb = window.totalWaterDb; // Total-Water Firebase
 const jalGananaDb = window.jalGananaDb;   // JalGanana Firebase
 
 const tests = [
-    { name: "Colour", bilingual_name: "à¤°à¤‚à¤—", max_limit: "-", desirable_limit: "-" },
-    { name: "Odour", bilingual_name: "à¤—à¤‚à¤§", max_limit: "-", desirable_limit: "-" },
-    { name: "Turbidity", bilingual_name: "à¤Ÿà¤°à¥à¤¬à¤¿à¤¡à¤¿à¤Ÿà¥€", max_limit: "-", desirable_limit: "-" },
-    { name: "TDS", bilingual_name: "à¤Ÿà¥€à¤¡à¥€à¤à¤¸", max_limit: "2000 mg/l", desirable_limit: "500 mg/l" },
-    { name: "pH", bilingual_name: "à¤ªà¥€à¤à¤š", max_limit: "6.5 à¤¸à¥‡ 8.5", desirable_limit: "6.5 à¤¸à¥‡ 8.5" },
-    { name: "T. Hardness", bilingual_name: "à¤•à¥à¤² à¤•à¤ à¥‹à¤°à¤¤à¤¾", max_limit: "600 mg/l", desirable_limit: "200 mg/l" },
-    { name: "Calcium", bilingual_name: "à¤•à¥ˆà¤²à¥à¤¶à¤¿à¤¯à¤®", max_limit: "200 mg/l", desirable_limit: "75 mg/l" },
-    { name: "Magnesium", bilingual_name: "à¤®à¥ˆà¤—à¥à¤¨à¥€à¤¶à¤¿à¤¯à¤®", max_limit: "100 mg/l", desirable_limit: "30 mg/l" },
-    { name: "Chloride", bilingual_name: "à¤•à¥à¤²à¥‹à¤°à¤¾à¤‡à¤¡", max_limit: "1000 mg/l", desirable_limit: "250 mg/l" },
-    { name: "Alkalinity", bilingual_name: "à¤•à¥à¤·à¤¾à¤°à¥€à¤¯à¤¤à¤¾", max_limit: "600 mg/l", desirable_limit: "200 mg/l" }
+    { name: "Colour", bilingual_name: "रंग", max_limit: "-", desirable_limit: "Clear" },
+    { name: "Odour", bilingual_name: "गंध", max_limit: "-", desirable_limit: "OK" },
+    { name: "Turbidity", bilingual_name: "टर्बिडिटी", max_limit: "-", desirable_limit: "-" },
+    { name: "TDS", bilingual_name: "टीडीएस", max_limit: "2000 mg/l", desirable_limit: "500 mg/l" },
+    { name: "pH", bilingual_name: "पीएच", max_limit: "6.5 से 8.5", desirable_limit: "6.5 से 8.5" },
+    { name: "T. Hardness", bilingual_name: "कुल कठोरता", max_limit: "600 mg/l", desirable_limit: "300 mg/l" },
+    { name: "Calcium", bilingual_name: "कैल्शियम", max_limit: "200 mg/l", desirable_limit: "75 mg/l" },
+    { name: "Magnesium", bilingual_name: "मैग्नीशियम", max_limit: "100 mg/l", desirable_limit: "30 mg/l" },
+    { name: "Chloride", bilingual_name: "क्लोराइड", max_limit: "1000 mg/l", desirable_limit: "250 mg/l" },
+    { name: "Alkalinity", bilingual_name: "क्षारीयता", max_limit: "600 mg/l", desirable_limit: "200 mg/l" }
 ];
 
 let chiDetails = {};
@@ -48,14 +48,14 @@ function categorizeSample(testName, result, maxLimit, desLimit) {
         const val = parseFloat(result);
         if (isNaN(val)) return "unknown";
         if (testName === "pH") {
-            const [maxLow, maxHigh] = maxLimit.split(' à¤¸à¥‡ ').map(parseFloat);
-            const [desLow, desHigh] = desLimit.split(' à¤¸à¥‡ ').map(parseFloat);
+            const [maxLow, maxHigh] = maxLimit.split(' से ').map(parseFloat);
+            const [desLow, desHigh] = desLimit.split(' से ').map(parseFloat);
             if (val < maxLow || val > maxHigh) return "unsuitable";
             if (val < desLow || val > desHigh) return "permissible";
             return "suitable";
         } else {
-            const maxVal = parseFloat(maxLimit.replace(/ mg\/l| -/g, '')) || Infinity;
-            const desVal = parseFloat(desLimit.replace(/ mg\/l| -/g, '')) || Infinity;
+            const maxVal = parseFloat(maxLimit.replace(/ mg\/l| NTU/g, '')) || Infinity;
+            const desVal = parseFloat(desLimit.replace(/ mg\/l| NTU/g, '')) || Infinity;
             if (val > maxVal) return "unsuitable";
             if (val > desVal) return "permissible";
             return "suitable";
@@ -78,24 +78,24 @@ function setStatus(message, type = "info") {
 // CHI Functions
 function loadChiCsv() {
     const file = document.getElementById('chi-csv').files[0];
-    if (!file) return setStatus("à¤•à¥ƒà¤ªà¤¯à¤¾ CSV à¤«à¤¼à¤¾à¤‡à¤² à¤šà¥à¤¨à¥‡à¤‚à¥¤", "warning");
+    if (!file) return setStatus("कृपया CSV फ़ाइल चुनें।", "warning");
     const reader = new FileReader();
     reader.onload = (e) => {
         const lines = e.target.result.split('\n').filter(line => line.trim());
-        if (lines.length < 2) return setStatus("CSV à¤–à¤¾à¤²à¥€ à¤¯à¤¾ à¤…à¤®à¤¾à¤¨à¥à¤¯ à¤¹à¥ˆà¥¤", "danger");
+        if (lines.length < 2) return setStatus("CSV खाली या अमान्य है।", "danger");
         const headers = lines[0].split(',');
         const row = lines[1].split(',');
         const data = {};
         headers.forEach((h, i) => data[h.trim()] = row[i]?.trim());
-        const allowedDivisions = ["à¤…à¤œà¤®à¥‡à¤°", "à¤œà¥‹à¤§à¤ªà¥à¤°", "à¤œà¤¯à¤ªà¥à¤°", "à¤¬à¥€à¤•à¤¾à¤¨à¥‡à¤°"];
+        const allowedDivisions = ["अजमेर", "जोधपुर", "जयपुर", "बीकानेर"];
         if (!data["CHI Letter No."] || !data["CHI Address"] || !allowedDivisions.includes(data["Division"]) || !validateDate(data["Report Date"])) {
-            return setStatus("à¤…à¤®à¤¾à¤¨à¥à¤¯ CSV à¤¡à¥‡à¤Ÿà¤¾à¥¤ à¤•à¥‰à¤²à¤® à¤šà¥‡à¤• à¤•à¤°à¥‡à¤‚: CHI Letter No., CHI Address, Division, Report Dateà¥¤", "danger");
+            return setStatus("अमान्य CSV डेटा। कॉलम चेक करें: CHI Letter No., CHI Address, Division, Report Date।", "danger");
         }
         document.getElementById('chi-letter-no').value = data["CHI Letter No."];
         document.getElementById('chi-address').value = data["CHI Address"];
         document.getElementById('chi-division').value = data["Division"];
         document.getElementById('report-date').value = data["Report Date"];
-        setStatus("CHI à¤µà¤¿à¤µà¤°à¤£ CSV à¤¸à¥‡ à¤²à¥‹à¤¡ à¤¹à¥‹ à¤—à¤à¥¤", "success");
+        setStatus("CHI विवरण CSV से लोड हो गए।", "success");
     };
     reader.readAsText(file, 'UTF-8');
 }
@@ -106,7 +106,7 @@ function clearChiForm() {
     document.getElementById('chi-division').value = '';
     document.getElementById('report-date').value = new Date().toLocaleDateString('en-GB').split('/').reverse().join('-');
     document.getElementById('chi-csv').value = '';
-    setStatus("CHI à¤«à¥‰à¤°à¥à¤® à¤¸à¤¾à¤«à¤¼ à¤•à¤¿à¤¯à¤¾ à¤—à¤¯à¤¾à¥¤", "info");
+    setStatus("CHI फॉर्म साफ़ किया गया।", "info");
 }
 
 function openSampleTab() {
@@ -116,12 +116,12 @@ function openSampleTab() {
         division: document.getElementById('chi-division').value,
         reportDate: document.getElementById('report-date').value.trim()
     };
-    const allowedDivisions = ["à¤…à¤œà¤®à¥‡à¤°", "à¤œà¥‹à¤§à¤ªà¥à¤°", "à¤œà¤¯à¤ªà¥à¤°", "à¤¬à¥€à¤•à¤¾à¤¨à¥‡à¤°"];
+    const allowedDivisions = ["अजमेर", "जोधपुर", "जयपुर", "बीकानेर"];
     if (!chiDetails.letterNo || !chiDetails.address || !allowedDivisions.includes(chiDetails.division) || !validateDate(chiDetails.reportDate)) {
-        return setStatus("à¤•à¥ƒà¤ªà¤¯à¤¾ à¤µà¥ˆà¤§ CHI Letter No., Address, Division, à¤”à¤° Report Date (DD-MM-YYYY) à¤¦à¤°à¥à¤œ à¤•à¤°à¥‡à¤‚à¥¤", "danger");
+        return setStatus("कृपया वैध CHI Letter No., Address, Division, और Report Date (DD-MM-YYYY) दर्ज करें।", "danger");
     }
     new bootstrap.Tab(document.querySelector('#sample-tab')).show();
-    setStatus("Sample Details à¤Ÿà¥ˆà¤¬ à¤ªà¤° à¤—à¤à¥¤", "success");
+    setStatus("Sample Details टैब पर गए।", "success");
 }
 
 // Sample Functions
@@ -172,23 +172,23 @@ function addSampleEntry(sample = { Source: '', Location: '', 'CHI Sample No.': '
 
 function addSamplesFromNum() {
     const num = parseInt(document.getElementById('num-samples').value);
-    if (isNaN(num) || num < 1 || num > 20) return setStatus("1-20 à¤•à¥‡ à¤¬à¥€à¤š à¤¨à¤‚à¤¬à¤° à¤¦à¤°à¥à¤œ à¤•à¤°à¥‡à¤‚à¥¤", "warning");
+    if (isNaN(num) || num < 1 || num > 20) return setStatus("1-20 के बीच नंबर दर्ज करें।", "warning");
     for (let i = sampleDetails.length; i < sampleDetails.length + num; i++) {
         addSampleEntry({}, i);
     }
-    setStatus(`${num} à¤¸à¥ˆà¤‚à¤ªà¤² à¤œà¥‹à¤¡à¤¼à¥‡ à¤—à¤à¥¤ à¤†à¤ª à¤‡à¤¨à¥à¤¹à¥‡à¤‚ à¤à¤¡à¤¿à¤Ÿ à¤¯à¤¾ à¤¡à¤¿à¤²à¥€à¤Ÿ à¤•à¤° à¤¸à¤•à¤¤à¥‡ à¤¹à¥ˆà¤‚à¥¤`, "success");
+    setStatus(`${num} सैंपल जोड़े गए। आप इन्हें एडिट या डिलीट कर सकते हैं।`, "success");
 }
 
 function loadSampleCsv() {
     const file = document.getElementById('sample-csv').files[0];
-    if (!file) return setStatus("CSV à¤«à¤¼à¤¾à¤‡à¤² à¤šà¥à¤¨à¥‡à¤‚à¥¤", "warning");
+    if (!file) return setStatus("CSV फ़ाइल चुनें।", "warning");
     const reader = new FileReader();
     reader.onload = (e) => {
         const lines = e.target.result.split('\n').filter(l => l.trim());
-        if (lines.length < 2) return setStatus("à¤…à¤®à¤¾à¤¨à¥à¤¯ CSVà¥¤", "danger");
+        if (lines.length < 2) return setStatus("अमान्य CSV।", "danger");
         const headers = lines[0].split(',');
         const required = ["Source", "Location", "CHI Sample No.", "Date", "Lab No.", "Sender"];
-        if (!required.every(h => headers.some(head => head.trim() === h))) return setStatus("CSV à¤®à¥‡à¤‚ à¤¯à¥‡ à¤•à¥‰à¤²à¤® à¤¹à¥‹à¤¨à¥‡ à¤šà¤¾à¤¹à¤¿à¤: " + required.join(", "), "danger");
+        if (!required.every(h => headers.some(head => head.trim() === h))) return setStatus("CSV में ये कॉलम होने चाहिए: " + required.join(", "), "danger");
         const maxLoaded = document.getElementById('num-samples').value ? parseInt(document.getElementById('num-samples').value) : lines.length - 1;
         sampleDetails = [];
         renderSampleEntries();
@@ -209,16 +209,16 @@ function loadSampleCsv() {
                 loaded++;
             }
         }
-        setStatus(`${loaded} à¤¸à¥ˆà¤‚à¤ªà¤² CSV à¤¸à¥‡ à¤²à¥‹à¤¡ à¤¹à¥à¤ (à¤…à¤§à¤¿à¤•à¤¤à¤® ${maxLoaded})à¥¤ à¤†à¤ª à¤‡à¤¨à¥à¤¹à¥‡à¤‚ à¤à¤¡à¤¿à¤Ÿ à¤¯à¤¾ à¤¡à¤¿à¤²à¥€à¤Ÿ à¤•à¤° à¤¸à¤•à¤¤à¥‡ à¤¹à¥ˆà¤‚à¥¤`, "success");
+        setStatus(`${loaded} सैंपल CSV से लोड हुए (अधिकतम ${maxLoaded})। आप इन्हें एडिट या डिलीट कर सकते हैं।`, "success");
     };
     reader.readAsText(file, 'UTF-8');
 }
 
 function deleteSampleEntry(index) {
-    if (confirm(`Sample ${index + 1} à¤¡à¤¿à¤²à¥€à¤Ÿ à¤•à¤°à¥‡à¤‚?`)) {
+    if (confirm(`Sample ${index + 1} डिलीट करें?`)) {
         sampleDetails.splice(index, 1);
         renderSampleEntries();
-        setStatus(`Sample ${index + 1} à¤¡à¤¿à¤²à¥€à¤Ÿ à¤¹à¥‹ à¤—à¤¯à¤¾à¥¤ à¤•à¥à¤² à¤¸à¥ˆà¤‚à¤ªà¤² à¤…à¤¬: ${sampleDetails.length}à¥¤ à¤¯à¤¹ Chemical à¤Ÿà¥‡à¤¬à¤² à¤®à¥‡à¤‚ à¤¦à¤¿à¤–à¥‡à¤—à¤¾à¥¤`, "warning");
+        setStatus(`Sample ${index + 1} डिलीट हो गया। कुल सैंपल अब: ${sampleDetails.length}। यह Chemical टेबल में दिखेगा।`, "warning");
     }
 }
 
@@ -232,7 +232,7 @@ function clearSampleForm() {
     document.getElementById('sample-csv').value = '';
     sampleDetails = [];
     document.getElementById('sample-entries').innerHTML = '';
-    setStatus("à¤¸à¥ˆà¤‚à¤ªà¤² à¤«à¥‰à¤°à¥à¤® à¤¸à¤¾à¤«à¤¼ à¤•à¤¿à¤¯à¤¾ à¤—à¤¯à¤¾à¥¤", "info");
+    setStatus("सैंपल फॉर्म साफ़ किया गया।", "info");
 }
 
 function generateReport() {
@@ -251,10 +251,10 @@ function generateReport() {
             valid++;
         }
     });
-    if (sampleDetails.length === 0) return setStatus("à¤•à¥‹à¤ˆ à¤µà¥ˆà¤§ à¤¸à¥ˆà¤‚à¤ªà¤² à¤¨à¤¹à¥€à¤‚à¥¤ à¤¸à¤­à¥€ à¤«à¤¼à¥€à¤²à¥à¤¡ à¤­à¤°à¥‡à¤‚ à¤”à¤° à¤«à¥‰à¤°à¥à¤®à¥‡à¤Ÿ à¤šà¥‡à¤• à¤•à¤°à¥‡à¤‚à¥¤", "danger");
+    if (sampleDetails.length === 0) return setStatus("कोई वैध सैंपल नहीं। सभी फ़ील्ड भरें और फॉर्मेट चेक करें।", "danger");
     populateChemicalResultsTab();
     new bootstrap.Tab(document.querySelector('#chemical-tab')).show();
-    setStatus(`${valid} à¤µà¥ˆà¤§ à¤¸à¥ˆà¤‚à¤ªà¤² à¤ªà¥à¤°à¥‹à¤¸à¥‡à¤¸ à¤¹à¥à¤à¥¤ Chemical Results à¤Ÿà¥ˆà¤¬ à¤ªà¤° à¤—à¤à¥¤`, "success");
+    setStatus(`${valid} वैध सैंपल प्रोसेस हुए। Chemical Results टैब पर गए।`, "success");
 }
 
 // Chemical Functions
@@ -271,7 +271,7 @@ async function populateChemicalResultsTab() {
             const docId = labNo.replace('/', '-');
             let value = '';
             try {
-                // JalGanana (labcalc-cee5c) à¤¸à¥‡ lab_calculations à¤•à¤²à¥‡à¤•à¥à¤¶à¤¨ à¤¸à¥‡ à¤¡à¥‡à¤Ÿà¤¾ fetch
+                // JalGanana (labcalc-cee5c) से lab_calculations कलेक्शन से डेटा fetch
                 const docRef = doc(collection(jalGananaDb, 'lab_calculations'), docId);
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists()) {
@@ -283,25 +283,25 @@ async function populateChemicalResultsTab() {
                         "Magnesium": "mg",
                         "Chloride": "chl",
                         "Alkalinity": "alk",
-                        "pH": "ph" // pH à¤•à¥‡ à¤²à¤¿à¤ key à¤œà¥‹à¤¡à¤¼à¤¾, à¤…à¤—à¤° JalGanana à¤®à¥‡à¤‚ ph à¤•à¥‡ à¤²à¤¿à¤ à¤…à¤²à¤— key à¤¹à¥‹ à¤¤à¥‹ à¤…à¤ªà¤¡à¥‡à¤Ÿ à¤•à¤°à¥‹
+                        "pH": "ph" // pH के लिए key जोड़ा, अगर JalGanana में ph के लिए अलग key हो तो अपडेट करो
                     };
                     value = data[keyMap[test.name]] || '';
-                    // Whole number à¤®à¥‡à¤‚ à¤•à¤¨à¥à¤µà¤°à¥à¤Ÿ à¤•à¤°à¥‡à¤‚
+                    // Whole number में कन्वर्ट करें
                     if (value && ["TDS", "T. Hardness", "Calcium", "Magnesium", "Chloride", "Alkalinity"].includes(test.name)) {
                         value = Math.round(parseFloat(value)).toString();
                     }
                 } else {
-                    setStatus(`JalGanana (lab_calculations) à¤®à¥‡à¤‚ ${labNo} à¤•à¥‡ à¤²à¤¿à¤ à¤¡à¥‡à¤Ÿà¤¾ à¤¨à¤¹à¥€à¤‚ à¤®à¤¿à¤²à¤¾à¥¤ à¤®à¥ˆà¤¨à¥à¤…à¤² à¤à¤‚à¤Ÿà¥à¤°à¥€ à¤•à¤°à¥‡à¤‚à¥¤`, "warning");
+                    setStatus(`JalGanana (lab_calculations) में ${labNo} के लिए डेटा नहीं मिला। मैनुअल एंट्री करें।`, "warning");
                 }
             } catch (err) {
                 console.error(err);
-                setStatus(`${labNo} à¤•à¥‡ à¤²à¤¿à¤ JalGanana à¤¸à¥‡ fetch error: ${err.message}. labcalc-cee5c à¤•à¥‡ Firebase permissions à¤šà¥‡à¤• à¤•à¤°à¥‡à¤‚à¥¤`, "danger");
+                setStatus(`${labNo} के लिए JalGanana से fetch error: ${err.message}. labcalc-cee5c के Firebase permissions चेक करें।`, "danger");
             }
-            // à¤¡à¤¿à¤«à¥‰à¤²à¥à¤Ÿ à¤µà¥ˆà¤²à¥à¤¯à¥‚à¤œ à¤¸à¥‡à¤Ÿ à¤•à¤°à¥‡à¤‚
+            // डिफॉल्ट वैल्यूज सेट करें
             if (test.name === "Colour") value = value || "Clear";
             else if (test.name === "Odour") value = value || "OK";
             else if (test.name === "Turbidity") value = value || "NO";
-            else if (test.name === "pH") value = value || "8.0"; // pH à¤¡à¤¿à¤«à¥‰à¤²à¥à¤Ÿ 8.0
+            else if (test.name === "pH") value = value || "8.0"; // pH डिफॉल्ट 8.0
             tableHTML += `<td><input type="text" class="form-control chemical-input d-inline-block me-1" data-lab="${labNo}" data-test="${test.name}" value="${value}" oninput="updateFinalAndStatus('${labNo}', '${test.name}', this.value)"></td>
                           <td><input type="text" class="form-control chemical-final d-inline-block me-1" data-lab="${labNo}" data-test="${test.name}" readonly value="${value}"></td>
                           <td><span class="chemical-status fw-bold d-inline-block" data-lab="${labNo}" data-test="${test.name}"></span></td>`;
@@ -311,7 +311,7 @@ async function populateChemicalResultsTab() {
     }
     tableHTML += '</tbody></table>';
     container.innerHTML = tableHTML;
-    setStatus(`Chemical Results à¤²à¥‹à¤¡ à¤¹à¥‹ à¤—à¤à¥¤ JalGanana (labcalc-cee5c, lab_calculations) à¤¸à¥‡ TDS (${sampleDetails.map(s => s["Lab No."]).join(', ')}) à¤•à¥‡ à¤²à¤¿à¤ à¤¡à¥‡à¤Ÿà¤¾ à¤²à¤¾à¤ à¤—à¤à¥¤ pH à¤¡à¤¿à¤«à¥‰à¤²à¥à¤Ÿ 8.0 à¤¸à¥‡à¤Ÿà¥¤ Colour, Odour, Turbidity à¤¡à¤¿à¤«à¥‰à¤²à¥à¤Ÿà¥¤ à¤¬à¤¾à¤•à¥€ à¤«à¥€à¤²à¥à¤¡à¥à¤¸ à¤à¤¡à¤¿à¤Ÿ à¤•à¤°à¥‡à¤‚à¥¤`, "success");
+    setStatus(`Chemical Results लोड हो गए। JalGanana (labcalc-cee5c, lab_calculations) से TDS (${sampleDetails.map(s => s["Lab No."]).join(', ')}) के लिए डेटा लाए गए। pH डिफॉल्ट 8.0 सेट। Colour, Odour, Turbidity डिफॉल्ट। बाकी फील्ड्स एडिट करें।`, "success");
 }
 
 function updateFinalAndStatus(labNo, testName, value) {
@@ -325,7 +325,7 @@ function updateFinalAndStatus(labNo, testName, value) {
         category = "invalid";
     }
     if (statusEl) {
-        const statusText = category === "suitable" ? "âœ… Desirable" : category === "permissible" ? "âš ï¸ Permissible" : category === "unsuitable" ? "âŒ Failed" : "Invalid Number";
+        const statusText = category === "suitable" ? "✅ Desirable" : category === "permissible" ? "⚠️ Permissible" : category === "unsuitable" ? "❌ Failed" : "Invalid Number";
         statusEl.textContent = statusText;
         statusEl.className = `chemical-status fw-bold ${category === "unsuitable" || category === "invalid" ? "text-danger" : category === "permissible" ? "text-warning" : "text-success"}`;
     }
@@ -333,11 +333,11 @@ function updateFinalAndStatus(labNo, testName, value) {
 
 function clearChemicalForm() {
     populateChemicalResultsTab();
-    setStatus("Chemical results à¤¸à¤¾à¤«à¤¼ à¤•à¤¿à¤ à¤—à¤à¥¤ à¤¡à¤¿à¤«à¤¼à¥‰à¤²à¥à¤Ÿ à¤”à¤° JalGanana à¤¡à¥‡à¤Ÿà¤¾ à¤¬à¤¹à¤¾à¤²à¥¤", "info");
+    setStatus("Chemical results साफ़ किए गए। डिफ़ॉल्ट और JalGanana डेटा बहाल।", "info");
 }
 
 function submitChemicalResults() {
-    if (!confirm("à¤°à¤¿à¤œà¤²à¥à¤Ÿ à¤¸à¤¬à¤®à¤¿à¤Ÿ à¤•à¤°à¥‡à¤‚ à¤”à¤° à¤ªà¥à¤°à¥€à¤µà¥à¤¯à¥‚ à¤¦à¥‡à¤–à¥‡à¤‚?")) return;
+    if (!confirm("रिजल्ट सबमिट करें और प्रीव्यू देखें?")) return;
     chemicalResults = [];
     let allValid = true;
     sampleDetails.forEach(sample => {
@@ -354,54 +354,54 @@ function submitChemicalResults() {
         if (valid) chemicalResults.push({ "Lab No.": labNo, ...entries });
         else allValid = false;
     });
-    if (!allValid) return setStatus("Chemical results à¤®à¥‡à¤‚ à¤…à¤®à¤¾à¤¨à¥à¤¯/à¤–à¤¾à¤²à¥€ à¤«à¤¼à¥€à¤²à¥à¤¡ à¤ à¥€à¤• à¤•à¤°à¥‡à¤‚à¥¤", "danger");
+    if (!allValid) return setStatus("Chemical results में अमान्य/खाली फ़ील्ड ठीक करें।", "danger");
     populatePreviewTab();
     new bootstrap.Tab(document.querySelector('#preview-tab')).show();
-    setStatus("à¤°à¤¿à¤œà¤²à¥à¤Ÿ à¤¸à¤¬à¤®à¤¿à¤Ÿ à¤¹à¥‹ à¤—à¤à¥¤ à¤ªà¥à¤°à¥€à¤µà¥à¤¯à¥‚ à¤¤à¥ˆà¤¯à¤¾à¤° à¤¹à¥ˆà¥¤", "success");
+    setStatus("रिजल्ट सबमिट हो गए। प्रीव्यू तैयार है।", "success");
 }
 
 // Query Functions
 async function fetchByLabNo() {
     const labNo = document.getElementById('query-lab-no').value.trim();
-    if (!validateLabNo(labNo)) return setStatus("à¤µà¥ˆà¤§ Lab No. à¤¦à¤°à¥à¤œ à¤•à¤°à¥‡à¤‚ (à¤œà¥ˆà¤¸à¥‡, 123/2025)à¥¤", "warning");
+    if (!validateLabNo(labNo)) return setStatus("वैध Lab No. दर्ज करें (जैसे, 123/2025)।", "warning");
     const docId = labNo.replace('/', '-');
     try {
         const docRef = doc(collection(totalWaterDb, 'samples'), docId);
         const docSnap = await getDoc(docRef);
         queryResults = docSnap.exists() ? [docSnap.data()] : [];
         renderQueryTable();
-        setStatus(queryResults.length ? `${labNo} à¤•à¥‡ à¤²à¤¿à¤ à¤°à¤¿à¤œà¤²à¥à¤Ÿ à¤®à¤¿à¤²à¤¾à¥¤` : `${labNo} à¤•à¥‡ à¤²à¤¿à¤ à¤¡à¥‡à¤Ÿà¤¾ à¤¨à¤¹à¥€à¤‚ à¤®à¤¿à¤²à¤¾à¥¤`, queryResults.length ? "success" : "warning");
+        setStatus(queryResults.length ? `${labNo} के लिए रिजल्ट मिला।` : `${labNo} के लिए डेटा नहीं मिला।`, queryResults.length ? "success" : "warning");
     } catch (err) {
-        setStatus(`Query error: ${err.message}. Total-Water Firebase permissions à¤šà¥‡à¤• à¤•à¤°à¥‡à¤‚à¥¤`, "danger");
+        setStatus(`Query error: ${err.message}. Total-Water Firebase permissions चेक करें।`, "danger");
     }
 }
 
 async function fetchBySentBy() {
     const sentBy = document.getElementById('query-sent-by').value.trim();
-    if (!sentBy) return setStatus("Sent By à¤¦à¤°à¥à¤œ à¤•à¤°à¥‡à¤‚à¥¤", "warning");
+    if (!sentBy) return setStatus("Sent By दर्ज करें।", "warning");
     try {
         const q = query(collection(totalWaterDb, 'samples'), where('Sender', '==', sentBy));
         const snapshot = await getDocs(q);
         queryResults = snapshot.empty ? [] : snapshot.docs.map(d => d.data());
         renderQueryTable();
-        setStatus(`"${sentBy}" à¤•à¥‡ à¤²à¤¿à¤ ${queryResults.length} à¤°à¤¿à¤œà¤²à¥à¤Ÿ à¤®à¤¿à¤²à¥‡à¥¤`, "success");
+        setStatus(`"${sentBy}" के लिए ${queryResults.length} रिजल्ट मिले।`, "success");
     } catch (err) {
-        setStatus(`Error: ${err.message}. Total-Water Firebase permissions à¤šà¥‡à¤• à¤•à¤°à¥‡à¤‚à¥¤`, "danger");
+        setStatus(`Error: ${err.message}. Total-Water Firebase permissions चेक करें।`, "danger");
     }
 }
 
 async function fetchBySentByLocation() {
     const sentBy = document.getElementById('query-sent-by').value.trim();
     const location = document.getElementById('query-location').value.trim();
-    if (!sentBy || !location) return setStatus("Sent By à¤”à¤° Location à¤¦à¥‹à¤¨à¥‹à¤‚ à¤¦à¤°à¥à¤œ à¤•à¤°à¥‡à¤‚à¥¤", "warning");
+    if (!sentBy || !location) return setStatus("Sent By और Location दोनों दर्ज करें।", "warning");
     try {
         const q = query(collection(totalWaterDb, 'samples'), where('Sender', '==', sentBy), where('Location', '==', location));
         const snapshot = await getDocs(q);
         queryResults = snapshot.empty ? [] : snapshot.docs.map(d => d.data());
         renderQueryTable();
-        setStatus(`"${sentBy}" + "${location}" à¤•à¥‡ à¤²à¤¿à¤ ${queryResults.length} à¤°à¤¿à¤œà¤²à¥à¤Ÿ à¤®à¤¿à¤²à¥‡à¥¤`, "success");
+        setStatus(`"${sentBy}" + "${location}" के लिए ${queryResults.length} रिजल्ट मिले।`, "success");
     } catch (err) {
-        setStatus(`Error: ${err.message}. Total-Water Firebase permissions à¤šà¥‡à¤• à¤•à¤°à¥‡à¤‚à¥¤`, "danger");
+        setStatus(`Error: ${err.message}. Total-Water Firebase permissions चेक करें।`, "danger");
     }
 }
 
@@ -421,7 +421,7 @@ function renderQueryTable() {
 }
 
 function generateQueryPdf() {
-    if (queryResults.length === 0) return setStatus("à¤à¤•à¥à¤¸à¤ªà¥‹à¤°à¥à¤Ÿ à¤•à¤°à¤¨à¥‡ à¤•à¥‡ à¤²à¤¿à¤ à¤•à¥‹à¤ˆ à¤°à¤¿à¤œà¤²à¥à¤Ÿ à¤¨à¤¹à¥€à¤‚à¥¤", "warning");
+    if (queryResults.length === 0) return setStatus("एक्सपोर्ट करने के लिए कोई रिजल्ट नहीं।", "warning");
     const win = window.open('', '_blank');
     win.document.write(`
         <html><head><title>Query Report - ${new Date().toLocaleDateString()}</title>
@@ -429,21 +429,21 @@ function generateQueryPdf() {
         </head><body><h2>Database Query Report</h2><p>Generated on: ${new Date().toLocaleDateString()}</p>${document.getElementById('query-table').outerHTML}<script>window.print();</script></body></html>
     `);
     win.document.close();
-    setStatus("PDF à¤à¤•à¥à¤¸à¤ªà¥‹à¤°à¥à¤Ÿ à¤–à¥à¤² à¤—à¤¯à¤¾à¥¤ à¤¬à¥à¤°à¤¾à¤‰à¤œà¤¼à¤° à¤ªà¥à¤°à¤¿à¤‚à¤Ÿ à¤¸à¥‡ PDF à¤¸à¥‡à¤µ à¤•à¤°à¥‡à¤‚à¥¤", "success");
+    setStatus("PDF एक्सपोर्ट खुल गया। ब्राउज़र प्रिंट से PDF सेव करें।", "success");
 }
 
 // Preview Functions
 function populatePreviewTab() {
     const sampleTbody = document.querySelector('#sample-preview-table tbody');
     sampleTbody.innerHTML = '';
-    const sampleHeaders = ["à¤•à¥à¤°.à¤¸à¤‚.", "à¤µà¤¿à¤µà¤°à¤£"].concat(sampleDetails.map((_, i) => `(${i+1})`));
+    const sampleHeaders = ["क्र.सं.", "विवरण"].concat(sampleDetails.map((_, i) => `(${i+1})`));
     document.querySelector('#sample-preview-table thead tr').innerHTML = sampleHeaders.map(h => `<th>${h}</th>`).join('');
     const sampleRows = [
-        ["1.1", "à¤¸à¥à¤°à¥‹à¤¤ (Source)"].concat(sampleDetails.map(s => s.Source)),
-        ["1.2", "à¤¸à¥à¤¥à¤¾à¤¨ (Location)"].concat(sampleDetails.map(s => s.Location)),
-        ["1.3", "à¤¸à¥€à¤à¤šà¤†à¤ˆ à¤¨à¤®à¥‚à¤¨à¤¾ à¤¸à¤‚à¤–à¥à¤¯à¤¾ (CHI Sample No.)"].concat(sampleDetails.map(s => s['CHI Sample No.'])),
-        ["1.4", "à¤¨à¤®à¥‚à¤¨à¤¾ à¤¸à¤‚à¤—à¥à¤°à¤¹ à¤•à¥€ à¤¤à¤¾à¤°à¥€à¤– (Date)"].concat(sampleDetails.map(s => s.Date)),
-        ["1.5", "à¤ªà¥à¤°à¤¯à¥‹à¤—à¤¶à¤¾à¤²à¤¾ à¤¸à¤‚à¤–à¥à¤¯à¤¾ (Lab No.)"].concat(sampleDetails.map(s => s['Lab No.']))
+        ["1.1", "स्रोत (Source)"].concat(sampleDetails.map(s => s.Source)),
+        ["1.2", "स्थान (Location)"].concat(sampleDetails.map(s => s.Location)),
+        ["1.3", "मुख्य नि. नमूने की संख्या (CHI Sample No.)"].concat(sampleDetails.map(s => s['CHI Sample No.'])),
+        ["1.4", "नमूना संग्रह की तारीख (Date)"].concat(sampleDetails.map(s => s.Date)),
+        ["1.5", "प्रयोगशाला संख्या (Lab No.)"].concat(sampleDetails.map(s => s['Lab No.']))
     ];
     sampleRows.forEach(row => {
         const tr = sampleTbody.insertRow();
@@ -456,7 +456,7 @@ function populatePreviewTab() {
 
     const chemicalTbody = document.querySelector('#chemical-preview-table tbody');
     chemicalTbody.innerHTML = '';
-    const chemHeaders = ["à¤•.à¤¸à¤‚.", "à¤ªà¤°à¥€à¤•à¥à¤·à¤£ (Tests)", "à¤¨à¤¿à¤°à¥à¤§à¤¾à¤°à¤¿à¤¤ à¤®à¤¾à¤¨ (Max)", "à¤¨à¤¿à¤°à¥à¤§à¤¾à¤°à¤¿à¤¤ à¤®à¤¾à¤¨ (Desirable)"].concat(sampleDetails.map(s => s["Lab No."]));
+    const chemHeaders = ["क.सं.", "परीक्षण (Tests)", "निर्धारित मान (Max)", "निर्धारित मान (Desirable)"].concat(sampleDetails.map(s => s["Lab No."]));
     document.querySelector('#chemical-preview-table thead tr').innerHTML = chemHeaders.map(h => `<th>${h}</th>`).join('');
     tests.forEach((test, i) => {
         const tr = chemicalTbody.insertRow();
@@ -470,17 +470,17 @@ function populatePreviewTab() {
             td.classList.add('text-center');
         });
     });
-    setStatus("à¤°à¤¿à¤ªà¥‹à¤°à¥à¤Ÿ à¤ªà¥à¤°à¥€à¤µà¥à¤¯à¥‚ à¤…à¤ªà¤¡à¥‡à¤Ÿ à¤¹à¥‹ à¤—à¤¯à¤¾à¥¤ DOCX à¤œà¤¨à¤°à¥‡à¤Ÿ à¤•à¤°à¤¨à¥‡ à¤¸à¥‡ à¤ªà¤¹à¤²à¥‡ à¤Ÿà¥‡à¤¬à¤² à¤šà¥‡à¤• à¤•à¤°à¥‡à¤‚à¥¤", "success");
+    setStatus("रिपोर्ट प्रीव्यू अपडेट हो गया। DOCX जनरेट करने से पहले टेबल चेक करें।", "success");
 }
 
 function backToChemical() {
     new bootstrap.Tab(document.querySelector('#chemical-tab')).show();
-    setStatus("Chemical Results à¤ªà¤° à¤µà¤¾à¤ªà¤¸ à¤—à¤à¥¤", "info");
+    setStatus("Chemical Results पर वापस गए।", "info");
 }
 
 // Final Report
 async function generateFinalReport() {
-    if (!confirm("à¤…à¤‚à¤¤à¤¿à¤® DOCX à¤°à¤¿à¤ªà¥‹à¤°à¥à¤Ÿ à¤œà¤¨à¤°à¥‡à¤Ÿ à¤•à¤°à¥‡à¤‚? à¤¡à¥‡à¤Ÿà¤¾ Total-Water Firebase à¤®à¥‡à¤‚ à¤¸à¥‡à¤µ à¤¹à¥‹à¤—à¤¾ (overwrite prompt à¤•à¥‡ à¤¸à¤¾à¤¥)à¥¤")) return;
+    if (!confirm("अंतिम DOCX रिपोर्ट जनरेट करें? डेटा Total-Water Firebase में सेव होगा (overwrite prompt के साथ)।")) return;
     // Save to Total-Water Firebase
     for (let i = 0; i < sampleDetails.length; i++) {
         const sample = sampleDetails[i];
@@ -492,74 +492,50 @@ async function generateFinalReport() {
             console.log('Attempting to save to Firebase for Lab No.:', labNo);
             const existing = await getDoc(docRef);
             if (existing.exists()) {
-                if (!confirm(`Lab No. ${labNo} à¤ªà¤¹à¤²à¥‡ à¤¸à¥‡ à¤®à¥Œà¤œà¥‚à¤¦ à¤¹à¥ˆà¥¤ à¤“à¤µà¤°à¤°à¤¾à¤‡à¤Ÿ à¤•à¤°à¥‡à¤‚?`)) continue;
+                if (!confirm(`Lab No. ${labNo} पहले से मौजूद है। ओवरराइट करें?`)) continue;
             }
             await setDoc(docRef, { ...sample, ...chemical, docId: docId });
             console.log('Successfully saved to Firebase for Lab No.:', labNo);
         } catch (err) {
             console.error('Save error for Lab No.', labNo, ':', err);
-            setStatus(` ${labNo} à¤•à¥‹ Total-Water à¤®à¥‡à¤‚ à¤¸à¥‡à¤µ à¤•à¤°à¤¨à¥‡ à¤®à¥‡à¤‚ à¤¤à¥à¤°à¥à¤Ÿà¤¿: ${err.message}. Firebase permissions à¤¯à¤¾ auth à¤šà¥‡à¤• à¤•à¤°à¥‡à¤‚à¥¤`, "danger");
+            setStatus(` ${labNo} को Total-Water में सेव करने में त्रुटि: ${err.message}. Firebase permissions या auth चेक करें।`, "danger");
             return;
         }
     }
-    setStatus("Total-Water Firebase à¤®à¥‡à¤‚ à¤¡à¥‡à¤Ÿà¤¾ à¤¸à¥‡à¤µ à¤¹à¥‹ à¤—à¤¯à¤¾à¥¤ DOCX à¤œà¤¨à¤°à¥‡à¤Ÿ à¤¹à¥‹ à¤°à¤¹à¤¾ à¤¹à¥ˆ...", "info");
+    setStatus("Total-Water Firebase में डेटा सेव हो गया। DOCX जनरेट हो रहा है...", "info");
 
     // DOCX Generation
     try {
-        if (typeof window.docx === "undefined") {
-            setStatus("docx.js load à¤¨à¤¹à¥€à¤‚ à¤¹à¥à¤†à¥¤ Internet connection à¤¯à¤¾ script link à¤šà¥‡à¤• à¤•à¤°à¥‡à¤‚à¥¤", "danger");
-            return;
-        }
-        const {
-            Document,
-            Packer,
-            Paragraph,
-            Table,
-            TableRow,
-            TableCell,
-            TextRun,
-            AlignmentType
-        } = window.docx;
-        
         console.log('Starting DOCX generation');
-        
+        const { Document, Packer, Paragraph, Table, TableRow, TableCell, TextRun, AlignmentType } = docx;
         const doc = new Document({
             sections: [{
                 properties: { page: { margin: { top: 720, bottom: 720, left: 1080, right: 1080 } } },
                 children: [
-                    new Paragraph({ children: [new TextRun({ text: "à¤‰à¤¤à¥à¤¤à¤° à¤ªà¤¶à¥à¤šà¤¿à¤® à¤°à¥‡à¤²à¤µà¥‡", bold: true, size: 24, font: "Times New Roman" })] , alignment: AlignmentType.CENTER }),
-                    new Paragraph({ children: [new TextRun({ text: "à¤•à¤¾à¤°à¥à¤¯à¤¾à¤²à¤¯", size: 18, font: "Times New Roman" })] , alignment: AlignmentType.RIGHT }),
-                    new Paragraph({ children: [new TextRun({ text: "à¤‰à¤ª à¤®à¥. à¤°à¤¸à¤¾. à¤à¤µà¤‚ à¤§à¤¾à¤¤à¥à¤œà¥à¤ž", size: 18, font: "Times New Roman" })] , alignment: AlignmentType.RIGHT }),
-                    new Paragraph({ children: [new TextRun({ text: "à¤•à¥‡à¤¨à¥à¤¦à¥à¤°à¥€à¤¯ à¤ªà¥à¤°à¤¯à¥‹à¤—à¤¶à¤¾à¤²à¤¾, à¤•à¥ˆà¤°à¤¿à¤œ, à¤…à¤œà¤®à¥‡à¤°", size: 18, font: "Times New Roman" })] , alignment: AlignmentType.RIGHT }),
-                                        
-                    new Paragraph({ children: [new TextRun({ text: `à¤¸à¤‚à¤–à¥à¤¯à¤¾à¤ƒ à¤¸à¥€.à¤à¤‚à¤¡ à¤à¤®./à¤¸à¥€à¤à¤²/à¤à¤«à¤à¤²à¤¡à¤¬à¥à¤²à¥à¤¯à¥‚/à¤µà¤¾à¤Ÿà¤°/${formatLabNoRange()}                                                        à¤¦à¤¿à¤¨à¤¾à¤‚à¤•: ${chiDetails.reportDate}`, size: 18, font: "Times New Roman" })] }),
-                    
-                    
+                    new Paragraph({ children: [new TextRun({ text: "उत्तर पश्चिम रेलवे", bold: true, size: 24, font: "Times New Roman" })] , alignment: AlignmentType.CENTER }),
+                    new Paragraph({ children: [new TextRun({ text: "कार्यालय\nउप मु.रसा.एवं धातुज्ञ\nकेन्द्रीय प्रयोगशाला, कैरिज, अजमेर", size: 18, font: "Times New Roman" })] , alignment: AlignmentType.RIGHT }),
+                    new Paragraph({ children: [new TextRun({ text: `संख्याः सी.एंड एम./सीएल/एफएलडब्ल्यू/वाटर/${formatLabNoRange()}                                                        दिनांक: ${chiDetails.reportDate}`, size: 18, font: "Times New Roman" })] }),
                     new Paragraph({ children: [new TextRun({ text: `${chiDetails.address}`, bold: true, size: 18, font: "Times New Roman" })] }),
-                    new Paragraph({ children: [new TextRun({ text: "\t  à¤µà¤¿à¤·à¤¯: à¤ªà¥‡à¤¯à¤œà¤² à¤•à¤¾ à¤°à¤¾à¤¸à¤¾à¤¯à¤¨à¤¿à¤• à¤µà¤¿à¤¶à¥à¤²à¥‡à¤·à¤£à¥¤", size: 18, font: "Times New Roman" })] }),
-                    new Paragraph({ children: [new TextRun({ text: `\t  à¤¸à¤‚à¤¦à¤°à¥à¤­: ${chiDetails.address} à¤•à¤¾ à¤ªà¤¤à¥à¤° à¤¸à¤‚à¤–à¥à¤¯à¤¾ ${chiDetails.letterNo}`, size: 18, font: "Times New Roman" })] }),
-                    new Paragraph({ children: [new TextRun({ text: "(1) à¤¨à¤®à¥‚à¤¨à¤¾ à¤µà¤¿à¤µà¤°à¤£ (Sample Particulars)", bold: true, size: 18, font: "Times New Roman" })] }),
-                    createSampleDocxTable({ Table, TableRow, TableCell, Paragraph, TextRun }),
-                    new Paragraph({ children: [new TextRun({ text: "(2) à¤°à¤¾à¤¸à¤¾à¤¯à¤¨à¤¿à¤• à¤µà¤¿à¤¶à¥à¤²à¥‡à¤·à¤£ (Chemical Analysis)", bold: true, size: 18, font: "Times New Roman" })] }),
-                    createChemicalDocxTable({ Table, TableRow, TableCell, Paragraph, TextRun }),
-                    new Paragraph({ children: [new TextRun({ text: "à¤Ÿà¤¿à¤ªà¥à¤ªà¤£à¥€:", size: 18, font: "Times New Roman" })] }),
-                    ...generateRemarksDocx({ Paragraph, TextRun }),
-                    
-                    new Paragraph({ children: [new TextRun({ text: "\n(à¤…à¤¨à¤¿à¤² à¤•à¥à¤®à¤¾à¤° à¤•à¤°à¥à¤¦à¤®)", bold: true, size: 18, font: "Times New Roman" })] , alignment: AlignmentType.RIGHT }),
-                    new Paragraph({ children: [new TextRun({ text: "\nà¤°à¤¸à¤¾à¤¯à¤¨ à¤à¤µà¤‚ à¤§à¤¾à¤¤à¥à¤•à¤°à¥à¤® à¤…à¤§à¥€à¤•à¥à¤·à¤• (à¤à¤«à¤à¤²à¤¡à¤¬à¥à¤²à¥à¤¯à¥‚)", bold: true, size: 18, font: "Times New Roman" })] , alignment: AlignmentType.RIGHT }),
-                    new Paragraph({ children: [new TextRun({ text: "\nà¤•à¥‡à¤‚à¤¦à¥à¤°à¥€à¤¯ à¤ªà¥à¤°à¤¯à¥‹à¤—à¤¶à¤¾à¤²à¤¾, à¤‰.à¤ª.à¤°à¥‡., à¤…à¤œà¤®à¥‡à¤°", bold: true, size: 18, font: "Times New Roman" })] , alignment: AlignmentType.RIGHT }),
-                    
-                    new Paragraph({ children: [new TextRun({ text: `à¤ªà¥à¤°à¤¤à¤¿à¤²à¤¿à¤ªà¥€: à¤†à¤µà¤¶à¥à¤¯à¤• à¤•à¤¾à¤°à¥à¤¯à¤µà¤¾à¤¹à¥€ à¤¹à¥‡à¤¤à¥ - à¤®à¤‚à¤¡à¤² à¤šà¤¿à¤•à¤¿à¤¤à¥à¤¸à¤¾ à¤…à¤§à¤¿à¤•à¤¾à¤°à¥€ (à¤¸à¥à¤µà¤¾à¤¸à¥à¤¥à¥à¤¯)/${chiDetails.division}`, size: 18, font: "Times New Roman" })] })
+                    new Paragraph({ children: [new TextRun({ text: "\t  विषय: पेयजल का रसायनिक विश्लेषण।", size: 18, font: "Times New Roman" })] }),
+                    new Paragraph({ children: [new TextRun({ text: `\t  संदर्भ: ${chiDetails.address} का पत्र संख्या ${chiDetails.letterNo}`, size: 18, font: "Times New Roman" })] }),
+                    new Paragraph({ children: [new TextRun({ text: "(1) नमूना विवरण (Sample Particulars)", bold: true, size: 18, font: "Times New Roman" })] }),
+                    createSampleDocxTable(),
+                    new Paragraph({ children: [new TextRun({ text: "(2) रसायनिक विश्लेषण (Chemical Analysis)", bold: true, size: 18, font: "Times New Roman" })] }),
+                    createChemicalDocxTable(),
+                    new Paragraph({ children: [new TextRun({ text: "टिप्पणी:", size: 18, font: "Times New Roman" })] }),
+                    ...generateRemarksDocx(),
+                    new Paragraph({ children: [new TextRun({ text: "\nरसायन एवं धातुकर्म अधीक्षक (एफएलडब्ल्यू)\nकेंद्रीय प्रयोगशाला, उ.प.रे., अजमेर", bold: true, size: 18, font: "Times New Roman" })] , alignment: AlignmentType.RIGHT }),
+                    new Paragraph({ children: [new TextRun({ text: `प्रतिलिपी: आवश्यक कार्यवाही हेतु - मंडल चिकित्सा अधिकारी (स्वास्थ्य)/${chiDetails.division}`, size: 18, font: "Times New Roman" })] })
                 ]
             }]
         });
         const blob = await Packer.toBlob(doc);
         saveAs(blob, `water_${formatLabNoRange().replace('/', '_')}_${new Date().toISOString().slice(0,10).replace(/-/g,'')}.docx`);
-        setStatus("DOCX à¤°à¤¿à¤ªà¥‹à¤°à¥à¤Ÿ à¤œà¤¨à¤°à¥‡à¤Ÿ à¤”à¤° à¤¡à¤¾à¤‰à¤¨à¤²à¥‹à¤¡ à¤¹à¥‹ à¤—à¤ˆ!", "success");
+        setStatus("DOCX रिपोर्ट जनरेट और डाउनलोड हो गई!", "success");
         console.log('DOCX generation successful');
     } catch (err) {
         console.error('DOCX generation error:', err);
-        setStatus(`DOCX à¤œà¤¨à¤°à¥‡à¤¶à¤¨ à¤®à¥‡à¤‚ à¤¤à¥à¤°à¥à¤Ÿà¤¿: ${err.message}. docx.js à¤¯à¤¾ FileSaver.js à¤šà¥‡à¤• à¤•à¤°à¥‡à¤‚à¥¤`, "danger");
+        setStatus(`DOCX जनरेशन में त्रुटि: ${err.message}. docx.js या FileSaver.js चेक करें।`, "danger");
     }
 }
 
@@ -571,225 +547,58 @@ function formatLabNoRange() {
     const max = Math.max(...prefixes);
     return min === max ? `${min}/${year}` : `${min}-${max}/${year}`;
 }
-function createSampleDocxTable({ Table, TableRow, TableCell, Paragraph, TextRun }) {
-    const headers = ["à¤•à¥à¤°.à¤¸à¤‚.", "à¤µà¤¿à¤µà¤°à¤£"].concat(sampleDetails.map((_, i) => `(${i+1})`));
-    const rows = [
-        new TableRow({
-            children: headers.map(h =>
-                new TableCell({
-                    children: [
-                        new Paragraph({
-                            children: [new TextRun({ text: h, size: 18 })]
-                        })
-                    ]
-                })
-            )
-        })
-    ];
 
+function createSampleDocxTable() {
+    const headers = ["क्र.सं.", "विवरण"].concat(sampleDetails.map((_, i) => `(${i+1})`));
+    const rows = [new TableRow({ children: headers.map(h => new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: h, size: 18 })] })] })) })];
     const dataRows = [
-        ["1.1", "à¤¸à¥à¤°à¥‹à¤¤ (Source)"].concat(sampleDetails.map(s => s.Source)),
-        ["1.2", "à¤¸à¥à¤¥à¤¾à¤¨ (Location)"].concat(sampleDetails.map(s => s.Location)),
-        ["1.3", "à¤¸à¥€à¤à¤šà¤†à¤ˆ à¤¨à¤®à¥‚à¤¨à¤¾ à¤¸à¤‚. (CHI Sample No.)"].concat(sampleDetails.map(s => s['CHI Sample No.'])),
-        ["1.4", "à¤¨à¤®à¥‚à¤¨à¤¾ à¤¸à¤‚à¤—à¥à¤°à¤¹ à¤•à¥€ à¤¤à¤¾à¤°à¥€à¤– (Date)"].concat(sampleDetails.map(s => s.Date)),
-        ["1.5", "à¤ªà¥à¤°à¤¯à¥‹à¤—à¤¶à¤¾à¤²à¤¾ à¤¸à¤‚à¤–à¥à¤¯à¤¾ (Lab No.)"].concat(sampleDetails.map(s => s['Lab No.']))
+        ["1.1", "स्रोत (Source)"].concat(sampleDetails.map(s => s.Source)),
+        ["1.2", "स्थान (Location)"].concat(sampleDetails.map(s => s.Location)),
+        ["1.3", "मुख्य नि. नमूने की संख्या (CHI Sample No.)"].concat(sampleDetails.map(s => s['CHI Sample No.'])),
+        ["1.4", "नमूना संग्रह की तारीख (Date)"].concat(sampleDetails.map(s => s.Date)),
+        ["1.5", "प्रयोगशाला संख्या (Lab No.)"].concat(sampleDetails.map(s => s['Lab No.']))
     ];
-
     dataRows.forEach(row => {
-        rows.push(
-            new TableRow({
-                children: row.map(cell =>
-                    new TableCell({
-                        children: [
-                            new Paragraph({
-                                children: [new TextRun({ text: cell, size: 18 })]
-                            })
-                        ]
-                    })
-                )
-            })
-        );
+        rows.push(new TableRow({ children: row.map(cell => new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: cell, size: 18 })] })] })) }));
     });
-
     return new Table({ rows });
 }
 
-function createChemicalDocxTable({ Table, TableRow, TableCell, Paragraph, TextRun }) {
-    const sampleCount = sampleDetails.length;
-
-const topHeaderRow = new TableRow({
-  children: [
-    new TableCell({
-      rowSpan: 2,
-      children: [new Paragraph({ children: [new TextRun({ text: "à¤•à¥à¤°.à¤¸à¤‚.", size: 18 })] })]
-    }),
-    new TableCell({
-      rowSpan: 2,
-      children: [new Paragraph({ children: [new TextRun({ text: "à¤ªà¤°à¥€à¤•à¥à¤·à¤£ (Tests)", size: 18 })] })]
-    }),
-    new TableCell({
-      columnSpan: 2,
-      children: [new Paragraph({ children: [new TextRun({ text: "IS 10500:2012", size: 18 })] })]
-    }),
-    new TableCell({
-      columnSpan: sampleCount,
-      children: [new Paragraph({ children: [new TextRun({ text: "Result", size: 18 })] })]
-    })
-  ]
-});
-
-const secondHeaderCells = [
-  new TableCell({
-    children: [new Paragraph({ children: [new TextRun({ text: "à¤¨à¤¿à¤°à¥à¤§à¤¾à¤°à¤¿à¤¤ à¤®à¤¾à¤¨ (Max)", size: 18 })] })]
-  }),
-  new TableCell({
-    children: [new Paragraph({ children: [new TextRun({ text: "à¤¨à¤¿à¤°à¥à¤§à¤¾à¤°à¤¿à¤¤ à¤®à¤¾à¤¨ (Desirable)", size: 18 })] })]
-  })
-];
-
-sampleDetails.forEach(s => {
-  secondHeaderCells.push(
-    new TableCell({
-      children: [new Paragraph({ children: [new TextRun({ text: s["Lab No."], size: 18 })] })]
-    })
-  );
-});
-
-const secondHeaderRow = new TableRow({
-  children: secondHeaderCells
-});
-
-const rows = [topHeaderRow, secondHeaderRow];
-
-
+function createChemicalDocxTable() {
+    const headers = ["क.सं.", "परीक्षण (Tests)", "निर्धारित मान (Max)", "निर्धारित मान (Desirable)"].concat(sampleDetails.map(s => s['Lab No.']));
+    const rows = [new TableRow({ children: headers.map(h => new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: h, size: 18 })] })] })) })];
     tests.forEach((test, i) => {
         const row = new TableRow({
             children: [
-                new TableCell({
-                    children: [new Paragraph({ children: [new TextRun({ text: `2.${i+1}`, size: 18 })] })]
-                }),
-                new TableCell({
-                    children: [new Paragraph({ children: [new TextRun({ text: `${test.name} (${test.bilingual_name})`, size: 18 })] })]
-                }),
-                new TableCell({
-                    children: [new Paragraph({ children: [new TextRun({ text: test.max_limit, size: 18 })] })]
-                }),
-                new TableCell({
-                    children: [new Paragraph({ children: [new TextRun({ text: test.desirable_limit, size: 18 })] })]
-                }),
-                ...chemicalResults.map(r =>
-                    new TableCell({
-                        children: [
-                            new Paragraph({
-                                children: [new TextRun({ text: r[test.name] || '-', size: 18 })]
-                            })
-                        ]
-                    })
-                )
+                new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: `2.${i+1}`, size: 18 })] })] }),
+                new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: `${test.name} (${test.bilingual_name})`, size: 18 })] })] }),
+                new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: test.max_limit, size: 18 })] })] }),
+                new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: test.desirable_limit, size: 18 })] })] }),
+                ...chemicalResults.map(r => new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: r[test.name] || '-', size: 18 })] })] }))
             ]
         });
         rows.push(row);
     });
-
     return new Table({ rows });
 }
 
-function generateRemarksDocx({ Paragraph, TextRun }) {
-    const failedLabs = [];          // (unsuitable / invalid)
-    const permissibleOnlyLabs = []; // (permissible, but no fail)
-    const desirableLabs = [];       // (all desirable)
-
-    chemicalResults.forEach((result) => {
+function generateRemarksDocx() {
+    const remarks = [];
+    chemicalResults.forEach((result, i) => {
         const labNo = result["Lab No."];
-        let hasUnsuitableOrInvalid = false;
-        let hasPermissible = false;
         let allDesirable = true;
-
+        let hasPermissible = false;
         tests.forEach(test => {
             const value = result[test.name];
-            const category = categorizeSample(
-                test.name,
-                value,
-                test.max_limit,
-                test.desirable_limit
-            );
-
-            if (category === "unsuitable" || category === "invalid") {
-                hasUnsuitableOrInvalid = true;
-                allDesirable = false;
-            } else if (category === "permissible") {
-                hasPermissible = true;
-                allDesirable = false;
-            }
+            const category = categorizeSample(test.name, value, test.max_limit, test.desirable_limit);
+            if (category === "unsuitable" || category === "invalid") allDesirable = false;
+            if (category === "permissible") hasPermissible = true;
         });
-
-        if (hasUnsuitableOrInvalid) {
-            failedLabs.push(labNo);
-        } else if (hasPermissible) {
-            permissibleOnlyLabs.push(labNo);
-        } else if (allDesirable) {
-            desirableLabs.push(labNo);
-        }
+        const status = allDesirable ? "पेयजल के लिए उपयुक्त" : hasPermissible ? "पेयजल के लिए स्वीकार्य" : "पेयजल के लिए अनुपयुक्त";
+        remarks.push(new Paragraph({ children: [new TextRun({ text: `Sample ${i+1} (${labNo}): ${status}`, size: 18, font: "Times New Roman" })] }));
     });
-
-    const remarks = [];
-    let lineNo = 1;
-
-    // fail group
-    if (failedLabs.length > 0) {
-        const text = `(${lineNo}) à¤¨à¤®à¥‚à¤¨à¤¾ à¤ªà¥à¤°à¤¯à¥‹à¤—à¤¶à¤¾à¤²à¤¾ à¤¸à¤‚à¤–à¥à¤¯à¤¾ ${failedLabs.join(", ")} à¤…à¤§à¤¿à¤•à¤¤à¤® à¤…à¤¨à¥à¤®à¥‡à¤¯ à¤¶à¥à¤°à¥‡à¤£à¥€ à¤•à¥€ à¤¨à¤¿à¤°à¥à¤§à¤¾à¤°à¤¿à¤¤ à¤†à¤µà¤¶à¥à¤¯à¤•à¤¤à¤¾à¤“à¤‚ à¤•à¥€ à¤ªà¥‚à¤°à¥à¤¤à¤¿ à¤¨à¤¹à¥€à¤‚ à¤•à¤°à¤¤à¤¾ à¤¹à¥ˆ, à¤…à¤¤à¤ƒ à¤¯à¤¹ à¤‰à¤ªà¤¯à¥à¤•à¥à¤¤ à¤¨à¤¹à¥€à¤‚ à¤¹à¥ˆà¥¤`;
-        remarks.push(
-            new Paragraph({
-                children: [
-                    new TextRun({
-                        text: text,
-                        size: 18,
-                        font: "Times New Roman"
-                    })
-                ]
-            })
-        );
-        lineNo++;
-    }
-
-    // permissible-only group
-    if (permissibleOnlyLabs.length > 0) {
-        const text = `(${lineNo}) à¤¨à¤®à¥‚à¤¨à¤¾ à¤ªà¥à¤°à¤¯à¥‹à¤—à¤¶à¤¾à¤²à¤¾ à¤¸à¤‚à¤–à¥à¤¯à¤¾ ${permissibleOnlyLabs.join(", ")} à¤‰à¤šà¥à¤šà¤¤à¤® à¤…à¤­à¥€à¤·à¥à¤Ÿ à¤¶à¥à¤°à¥‡à¤£à¥€ à¤•à¥€ à¤¨à¤¿à¤°à¥à¤¦à¤¿à¤·à¥à¤Ÿ à¤†à¤µà¤¶à¥à¤¯à¤•à¤¤à¤¾à¤“à¤‚ à¤•à¥€ à¤ªà¥‚à¤°à¥à¤¤à¤¿ à¤¨à¤¹à¥€à¤‚ à¤•à¤°à¤¤à¤¾ à¤¹à¥ˆ à¤•à¤¿à¤¨à¥à¤¤à¥ à¤…à¤§à¤¿à¤•à¤¤à¤® à¤…à¤¨à¥à¤œà¥à¤žà¥‡à¤¯ à¤¶à¥à¤°à¥‡à¤£à¥€ à¤•à¥‡ à¤¨à¤¿à¤°à¥à¤¦à¤¿à¤·à¥à¤Ÿ à¤†à¤µà¤¶à¥à¤¯à¤•à¤¤à¤¾à¤“à¤‚ à¤•à¥€ à¤ªà¥‚à¤°à¥à¤¤à¤¿ à¤•à¤°à¤¤à¤¾ à¤¹à¥ˆà¤‚ à¤…à¤¤: à¤‰à¤šà¥à¤šà¤¤à¤° à¤µà¥ˆà¤•à¤²à¥à¤ªà¤¿à¤• à¤¸à¥à¤¤à¥à¤°à¥‹à¤¤ à¤•à¥‡ à¤…à¤­à¤¾à¤µ à¤®à¥‡à¤‚ à¤œà¤² à¤•à¤¾ à¤‰à¤ªà¤¯à¥‹à¤— à¤•à¤° à¤¸à¤•à¤¤à¥‡ à¤¹à¥ˆà¤‚ à¤”à¤° à¤•à¥à¤·à¥‡à¤¤à¥à¤° à¤®à¥‡à¤‚ à¤‰à¤ªà¤²à¤¬à¥à¤§ à¤œà¤² à¤•à¥€ à¤¸à¤¾à¤®à¤¾à¤¨à¥à¤¯ à¤µà¤¿à¤¶à¤¿à¤·à¥à¤Ÿà¤¤à¤¾à¤“ à¤•à¥‡ à¤†à¤§à¤¾à¤° à¤ªà¤° à¤œà¤² à¤•à¥‹ à¤¸à¤¾à¤§à¤¾à¤°à¤£à¤¤à¤¯à¤¾ à¤¸à¥à¤µà¥€à¤•à¥ƒà¤¤ à¤•à¤¿à¤¯à¤¾ à¤œà¤¾ à¤¸à¤•à¤¤à¤¾ à¤¹à¥ˆà¥¤`;
-        remarks.push(
-            new Paragraph({
-                children: [
-                    new TextRun({
-                        text: text,
-                        size: 18,
-                        font: "Times New Roman"
-                    })
-                ]
-            })
-        );
-        lineNo++;
-    }
-
-    // all-desirable group
-    if (desirableLabs.length > 0) {
-        const text = `(${lineNo}) à¤¨à¤®à¥‚à¤¨à¤¾ à¤ªà¥à¤°à¤¯à¥‹à¤—à¤¶à¤¾à¤²à¤¾ à¤¸à¤‚à¤–à¥à¤¯à¤¾ ${desirableLabs.join(", ")} à¤‰à¤šà¥à¤šà¤¤à¤® à¤…à¤­à¥€à¤·à¥à¤Ÿ à¤¶à¥à¤°à¥‡à¤£à¥€ à¤•à¥€ à¤¨à¤¿à¤°à¥à¤§à¤¾à¤°à¤¿à¤¤ à¤†à¤µà¤¶à¥à¤¯à¤•à¤¤à¤¾à¤“à¤‚ à¤•à¥€ à¤ªà¥‚à¤°à¥à¤¤à¤¿ à¤•à¤°à¤¤à¤¾ à¤¹à¥ˆ, à¤…à¤¤à¤ƒ à¤‰à¤ªà¤¯à¥à¤•à¥à¤¤ à¤¹à¥ˆà¥¤`;
-        remarks.push(
-            new Paragraph({
-                children: [
-                    new TextRun({
-                        text: text,
-                        size: 18,
-                        font: "Times New Roman"
-                    })
-                ]
-            })
-        );
-    }
-
     return remarks;
 }
-
-
-
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
@@ -809,7 +618,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('generate-final-report').addEventListener('click', generateFinalReport);
     document.getElementById('back-to-chemical').addEventListener('click', backToChemical);
 
-    // Delete à¤¬à¤Ÿà¤¨à¥‹à¤‚ à¤•à¥‹ à¤²à¤¿à¤¸à¤¨ à¤•à¤°à¥‹ (deleteSampleEntry à¤«à¤¿à¤•à¥à¤¸)
+    // Delete बटनों को लिसन करो (deleteSampleEntry फिक्स)
     document.getElementById('sample-entries').addEventListener('click', function(event) {
         if (event.target.closest('.delete-btn')) {
             const btn = event.target.closest('.delete-btn');
