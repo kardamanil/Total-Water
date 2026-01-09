@@ -1,4 +1,10 @@
+// Google Sheets config
+const SHEET_ID = '11KaUcJkL750nnfJsVKFGtIaT-Hh6sjTZD0KvzP82eKU';
+const API_KEY = 'AIzaSyDFPzxNoz4bevqAsgAe1qh31-yvqyLtRak';
+
+
 // js/script.js - Modular Water Quality Report App (JalGanana style)
+
 import { getFirestore, collection, doc, getDoc, setDoc, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
 
 // Access global DBs from index.html
@@ -68,6 +74,26 @@ function categorizeSample(testName, result, maxLimit, desLimit) {
         return "unknown";
     }
 }
+// Google Sheets helper: fetch whole sheet as CSV text
+async function fetchSheetCsv(sheetName) {
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Google Sheet fetch error: ' + res.status);
+    return await res.text();
+}
+
+// Google Sheets helper: get all sheet names (for dropdowns)
+async function fetchAllSheetNames() {
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}?fields=sheets(properties(title))&key=${API_KEY}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Sheets API error: ' + res.status);
+    const data = await res.json();
+    return data.sheets.map(s => s.properties.title);
+}
+
+
+
+
 
 // Status Update Function
 function setStatus(message, type = "info") {
