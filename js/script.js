@@ -148,11 +148,16 @@ async function loadChiFromGoogle() {
         headers.forEach((h, i) => data[h.trim()] = row[i]?.trim());
 
         const allowedDivisions = ['अजमेर', 'जोधपुर', 'जयपुर', 'बीकानेर'];
-        if (!data['CHI Letter No.'] ||
-            !data['CHI Address'] ||
-            !allowedDivisions.includes(data['Division']) ||
-            !validateDate(data['Report Date'])) {
-            return setStatus('Google Sheet CHI CSV must contain valid CHI Letter No., Address, Division, Report Date.', 'danger');
+        
+        // Flexible header matching
+        const letterNo = data['CHI Letter No.'] || data['CHI Letter No'] || '';
+        const address = data['CHI Address'] || data['CHI Address '] || '';
+        const division = data['Division'] || data['Division '] || '';
+        const reportDate = data['Report Date'] || data['Report Date '] || '';
+
+        if (!letterNo || !address || !allowedDivisions.includes(division) || !validateDate(reportDate)) {
+
+           return setStatus('Google Sheet CHI CSV must contain valid CHI Letter No., Address, Division, Report Date.', 'danger');
         }
 
         document.getElementById('chi-letter-no').value = data['CHI Letter No.'];
