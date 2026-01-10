@@ -732,7 +732,6 @@ async function generateFinalReport() {
                     new Paragraph({ children: [new TextRun({ text: "उप मु. रसा. एवं धातुज्ञ", size: 18, font: "Times New Roman" })] , alignment: AlignmentType.RIGHT }),
                     new Paragraph({ children: [new TextRun({ text: "केन्द्रीय प्रयोगशाला, कैरिज, अजमेर", size: 18, font: "Times New Roman" })] , alignment: AlignmentType.RIGHT }),
                                         
-                    //new Paragraph({ children: [new TextRun({ text: `संख्याः सी.एंड एम./सीएल/एफएलडब्ल्यू/वाटर/${formatLabNoRange()}                                                        दिनांक: ${chiDetails.reportDate}`, size: 18, font: "Times New Roman" })] }),
                     
                     // Table for Letter No (Left) and Date (Right) without borders
                     new Table({
@@ -760,7 +759,7 @@ async function generateFinalReport() {
                                                         text: `संख्याः सी.एंड एम./सीएल/एफएलडब्ल्यू/वाटर/${formatLabNoRange()}`,
                                                         size: 18,
                                                         font: "Times New Roman",
-                                                        //bold: true // Optional: Agar bold chahiye to
+                                                        bold: false // Optional: Agar bold chahiye to
                                                     })
                                                 ],
                                                 alignment: AlignmentType.LEFT // Left Align
