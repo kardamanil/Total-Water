@@ -775,7 +775,7 @@ async function generateFinalReport() {
                                                         text: `दिनांक: ${chiDetails.reportDate}`,
                                                         size: 18,
                                                         font: "Times New Roman",
-                                                        bold: true // Optional
+                                                        bold: false // Optional
                                                     })
                                                 ],
                                                 alignment: AlignmentType.RIGHT // Right Align
