@@ -4,6 +4,9 @@ const SHEET_ID = '11KaUcJkL750nnfJsVKFGtIaT-Hh6sjTZD0KvzP82eKU';
 const API_KEY = 'AIzaSyDFPzxNoz4bevqAsgAe1qh31-yvqyLtRak';
 
 
+// Global Variable
+let allGlobalSheetNames = []; // <--- Ye line add karein
+
 // js/script.js - Modular Water Quality Report App (JalGanana style)
 
 import { getFirestore, collection, doc, getDoc, setDoc, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
@@ -297,73 +300,115 @@ function loadSampleCsv() {
 // Load Samples from Google Sheet (same format as Sample CSV)
 async function loadSamplesFromGoogle() {
     const sheetSelect = document.getElementById('sample-sheet-select');
-    const sheetName = sheetSelect ? sheetSelect.value : '';
+    const selectedSheet = sheetSelect ? sheetSelect.value : '';
     const filterSampleNo = document.getElementById('sample-no-filter')?.value.trim() || '';
 
-    if (!sheetName) {
-        return setStatus('Please select a Sample sheet from dropdown.', 'warning');
+    // Step A: Decide kaunsi sheets search karni hain
+    let sheetsToSearch = [];
+    
+    if (selectedSheet) {
+        // Agar user ne sheet select ki hai, to bas wahi search karo
+        sheetsToSearch = [selectedSheet];
+    } else {
+        // Agar dropdown khali hai, to SARI '_samples' wali sheets search karo
+        if (allGlobalSheetNames.length === 0) {
+            return setStatus('Sheet list not loaded yet or empty.', 'warning');
+        }
+        sheetsToSearch = allGlobalSheetNames.filter(name => name.endsWith('_samples'));
+        if (sheetsToSearch.length === 0) {
+            return setStatus('No "_samples" sheets found in the spreadsheet.', 'warning');
+        }
+        setStatus(`Searching in all ${sheetsToSearch.length} sheets... please wait.`, 'info');
+    }
+
+    if (sheetsToSearch.length === 0 && !selectedSheet) {
+         return setStatus('Please select a sheet or ensure sheets load.', 'warning');
     }
 
     try {
-        setStatus('Loading samples from Google Sheet: ' + sheetName, 'info');
-
-        let url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
-        url+= '&headers=1';
+        // Query Logic (Wahi jo humne pehle fix kiya tha)
+        let queryParam = '';
         if (filterSampleNo) {
-            //  "Lab No.  column E me hai
-            const tq = `select * where E contains '${filterSampleNo.replace(/'/g, "\\'")}'`;
-            url += `&tq=${encodeURIComponent(tq)}`;
-        }
+            let queryParts = [];
+            // Range
+            if (filterSampleNo.includes('-') && !filterSampleNo.includes('/')) {
+                const [startStr, endStr] = filterSampleNo.split('-');
+                const start = parseInt(startStr.trim());
+                const end = parseInt(endStr.trim());
+                if (!isNaN(start) && !isNaN(end) && start <= end) {
+                    for (let i = start; i <= end; i++) queryParts.push(`E contains '${i}'`);
+                }
+            } 
+            // Comma
+            else if (filterSampleNo.includes(',')) {
+                filterSampleNo.split(',').forEach(num => {
+                    if(num.trim()) queryParts.push(`E contains '${num.trim()}'`);
+                });
+            } 
+            // Single
+            else {
+                queryParts.push(`E contains '${filterSampleNo.trim()}'`);
+            }
 
-        const res = await fetch(url);
-        if (!res.ok) throw new Error('Google Sheet fetch error: ' + res.status);
-        const csvText = await res.text();
-
-        const lines = csvText.split('\n').filter(l => l.trim());
-        if (lines.length < 2) {
-            return setStatus('No sample data found in Google Sheet (check filter / sheet).', 'warning');
-        }
-
-        const headers = lines[0].split(',');
-        // Flexible header matching - spaces aur quotes ignore करो
-const headerMap = {};
-headers.forEach((h, index) => {
-    const cleanHeader = h.trim().replace(/['"]/g, '').replace(/\s+/g, ' ');
-    headerMap[cleanHeader]=index;
-})
-
-
-
-        sampleDetails = [];
-        document.getElementById('sample-entries').innerHTML = '';
-        let loaded = 0;
-
-        for (let i = 1; i < lines.length; i++) {
-            const row = lines[i].split(',');
-            const data = {};
-            headers.forEach((h, j) => {
-                // Quotes hata kar data map kar rahe hain
-                const cleanKey = h.trim().replace(/['"]/g, '');
-                data[cleanKey] = row[j]?.replace(/['"]/g, '').trim();
-            });
-
-            if (validateDate(data['Date']) && validateLabNo(data['Lab No.'])) {
-                addSampleEntry({
-                    Source: data['Source'],
-                    Location: data['Location'],
-                    'CHI Sample No.': data['CHI Sample No.'],
-                    Date: data['Date'],
-                    'Lab No.': data['Lab No.'],
-                    Sender: data['Sender']
-                }, sampleDetails.length);
-                loaded++;
+            if (queryParts.length > 0) {
+                queryParam = `&tq=${encodeURIComponent(`select * where ${queryParts.join(' OR ')}`)}`;
             }
         }
 
-        setStatus(`Loaded ${loaded} sample(s) from Google Sheet.`, 'success');
+        // Step B: Sabhi target sheets se data fetch karo (Parallel Fetching)
+        const promises = sheetsToSearch.map(async (sheetName) => {
+            const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}&headers=1${queryParam}`;
+            const res = await fetch(url);
+            if (!res.ok) return []; // Error aaye to empty list return karo
+            const text = await res.text();
+            
+            // CSV Parsing (Simple split logic)
+            const lines = text.split('\n').filter(l => l.trim());
+            if (lines.length < 2) return []; // Sirf header hai to skip
+
+            // Header mapping (Dynamic)
+            const headers = lines[0].split(',');
+            const rows = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                const row = lines[i].split(',');
+                const data = {};
+                headers.forEach((h, j) => {
+                    const cleanKey = h.trim().replace(/['"]/g, '');
+                    data[cleanKey] = row[j]?.replace(/['"]/g, '').trim();
+                });
+                
+                // Validate aur Row Add karo
+                if (validateDate(data['Date']) && validateLabNo(data['Lab No.'])) {
+                    rows.push({
+                        Source: data['Source'],
+                        Location: data['Location'],
+                        'CHI Sample No.': data['CHI Sample No.'],
+                        Date: data['Date'],
+                        'Lab No.': data['Lab No.'],
+                        Sender: data['Sender']
+                    });
+                }
+            }
+            return rows;
+        });
+
+        // Sabhi sheets ka result aane ka wait karo
+        const resultsArray = await Promise.all(promises);
+        
+        // Results ko ek single list me Jodo (Flatten)
+        sampleDetails = resultsArray.flat();
+
+        if (sampleDetails.length === 0) {
+            setStatus('No matching samples found in selected sheet(s).', 'warning');
+        } else {
+            renderSampleEntries();
+            setStatus(`Found ${sampleDetails.length} sample(s) from ${sheetsToSearch.length} sheet(s).`, 'success');
+        }
+
     } catch (err) {
         console.error(err);
-        setStatus('Error loading samples from Google Sheet: ' + err.message, 'danger');
+        setStatus('Error loading samples: ' + err.message, 'danger');
     }
 }
 
@@ -971,8 +1016,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (chiGoogleBtn) chiGoogleBtn.addEventListener('click', loadChiFromGoogle);
     if (sampleGoogleBtn) sampleGoogleBtn.addEventListener('click', loadSamplesFromGoogle);
 
-    // NEW: Populate dropdowns from Sheets API
+    // Populate dropdowns from Sheets API
     fetchAllSheetNames().then(names => {
+        allGlobalSheetNames = names; // <--- YE LINE (Store for global search)
         const chiSheets = names.filter(n => n.endsWith('_chi'));
         const sampleSheets = names.filter(n => n.endsWith('_samples'));
 
