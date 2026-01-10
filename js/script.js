@@ -716,6 +716,8 @@ async function generateFinalReport() {
             TableRow,
             TableCell,
             TextRun,
+            WidthType,
+            BorderStyle,
             AlignmentType
         } = window.docx;
         
@@ -732,7 +734,59 @@ async function generateFinalReport() {
                                         
                     new Paragraph({ children: [new TextRun({ text: `संख्याः सी.एंड एम./सीएल/एफएलडब्ल्यू/वाटर/${formatLabNoRange()}                                                        दिनांक: ${chiDetails.reportDate}`, size: 18, font: "Times New Roman" })] }),
                     
-                    
+                    // Table for Letter No (Left) and Date (Right) without borders
+                    new Table({
+                        width: {
+                            size: 100,
+                            type: WidthType.PERCENTAGE, // Table width = Page Width
+                        },
+                        borders: { // Saare borders hata diye (Invisible Table)
+                            top: { style: BorderStyle.NONE, size: 0, color: "auto" },
+                            bottom: { style: BorderStyle.NONE, size: 0, color: "auto" },
+                            left: { style: BorderStyle.NONE, size: 0, color: "auto" },
+                            right: { style: BorderStyle.NONE, size: 0, color: "auto" },
+                            insideVertical: { style: BorderStyle.NONE, size: 0, color: "auto" },
+                            insideHorizontal: { style: BorderStyle.NONE, size: 0, color: "auto" },
+                        },
+                        rows: [
+                            new TableRow({
+                                children: [
+                                    // Column 1: Letter Number (Left Aligned)
+                                    new TableCell({
+                                        children: [
+                                            new Paragraph({
+                                                children: [
+                                                    new TextRun({
+                                                        text: `संख्याः सी.एंड एम./सीएल/एफएलडब्ल्यू/वाटर/${formatLabNoRange()}`,
+                                                        size: 18,
+                                                        font: "Times New Roman",
+                                                        bold: true // Optional: Agar bold chahiye to
+                                                    })
+                                                ],
+                                                alignment: AlignmentType.LEFT // Left Align
+                                            })
+                                        ],
+                                    }),
+                                    // Column 2: Date (Right Aligned)
+                                    new TableCell({
+                                        children: [
+                                            new Paragraph({
+                                                children: [
+                                                    new TextRun({
+                                                        text: `दिनांक: ${chiDetails.reportDate}`,
+                                                        size: 18,
+                                                        font: "Times New Roman",
+                                                        bold: true // Optional
+                                                    })
+                                                ],
+                                                alignment: AlignmentType.RIGHT // Right Align
+                                            })
+                                        ],
+                                    }),
+                                ],
+                            }),
+                        ],
+                    }),
                     new Paragraph({ children: [new TextRun({ text: `${chiDetails.address}`, bold: true, size: 18, font: "Times New Roman" })] }),
                     new Paragraph({ children: [new TextRun({ text: "\t  विषय: पेयजल का रासायनिक विश्लेषण।", size: 18, font: "Times New Roman" })] }),
                     new Paragraph({ children: [new TextRun({ text: `\t  संदर्भ: ${chiDetails.address} का पत्र संख्या ${chiDetails.letterNo}`, size: 18, font: "Times New Roman" })] }),
