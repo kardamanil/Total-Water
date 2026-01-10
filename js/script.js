@@ -308,9 +308,10 @@ async function loadSamplesFromGoogle() {
         setStatus('Loading samples from Google Sheet: ' + sheetName, 'info');
 
         let url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
+        url+= '&headers=1';
         if (filterSampleNo) {
             //  "Lab No.  column E me hai
-            const tq = `select * where E = '${filterSampleNo.replace(/'/g, "\\'")}'`;
+            const tq = `select * where E contains '${filterSampleNo.replace(/'/g, "\\'")}'`;
             url += `&tq=${encodeURIComponent(tq)}`;
         }
 
