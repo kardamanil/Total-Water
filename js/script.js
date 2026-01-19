@@ -822,7 +822,7 @@ function formatLabNoRange() {
     const max = Math.max(...prefixes);
     return min === max ? `${min}/${year}` : `${min}-${max}/${year}`;
 }
-function createSampleDocxTable({ Table, TableRow, TableCell, Paragraph, TextRun, WidthType }) {
+function createSampleDocxTable({ Table, TableRow, TableCell, Paragraph, TextRun }) {
     const headers = ["क्र.सं.", "विवरण"].concat(sampleDetails.map((_, i) => `(${i+1})`));
     const rows = [
         new TableRow({
@@ -862,14 +862,8 @@ function createSampleDocxTable({ Table, TableRow, TableCell, Paragraph, TextRun,
         );
     });
 
-    //return new Table({ rows });
-    return new Table({
-        Width : {
-            Size:100,
-            type: WidthType.PERCENTAGE,
-        },
-        rows: rows
-    });
+    return new Table({ rows });
+    
 }
 
 function createChemicalDocxTable({ Table, TableRow, TableCell, Paragraph, TextRun }) {
