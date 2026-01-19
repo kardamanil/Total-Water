@@ -862,7 +862,14 @@ function createSampleDocxTable({ Table, TableRow, TableCell, Paragraph, TextRun 
         );
     });
 
-    return new Table({ rows });
+    //return new Table({ rows });
+    return new Table({
+        Width : {
+            Size:100,
+            type: WidthType.PERCENTAGE,
+        },
+        rows: rows
+    });
 }
 
 function createChemicalDocxTable({ Table, TableRow, TableCell, Paragraph, TextRun }) {
