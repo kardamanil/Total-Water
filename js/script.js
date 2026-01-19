@@ -794,7 +794,7 @@ async function generateFinalReport() {
                     new Paragraph({ children: [new TextRun({ text: "(2) रासायनिक विश्लेषण (Chemical Analysis)", bold: true, size: 18, font: "Times New Roman" })] }),
                     createChemicalDocxTable({ Table, TableRow, TableCell, Paragraph, TextRun }),
                     new Paragraph({ children: [new TextRun({ text: "टिप्पणी:", size: 18, font: "Times New Roman" })] }),
-                    ...generateRemarksDocx({ Paragraph, TextRun }),
+                    ...generateRemarksDocx({ Paragraph, TextRun, AlignmentType }),
                     
                     new Paragraph({ children: [new TextRun({ text: "\n(अनिल कुमार कर्दम)", bold: true, size: 18, font: "Times New Roman" })] , alignment: AlignmentType.RIGHT }),
                     new Paragraph({ children: [new TextRun({ text: "\nरसायन एवं धातुकर्म अधीक्षक (एफएलडब्ल्यू)", bold: true, size: 18, font: "Times New Roman" })] , alignment: AlignmentType.RIGHT }),
@@ -989,7 +989,7 @@ function generateRemarksDocx({ Paragraph, TextRun, AlignmentType }) {
     // Helper function to create justified paragraphs
     const createJustifiedParagraph = (text) => {
         return new Paragraph({
-            alignment: "justified", // यहाँ अलाइनमेंट सेट किया गया है
+            alignment: AlignmentType ? AlignmentType.JUSTIFIED:"justified", // यहाँ अलाइनमेंट सेट किया गया है
             children: [
                 new TextRun({
                     text: text,
