@@ -822,7 +822,7 @@ function formatLabNoRange() {
     const max = Math.max(...prefixes);
     return min === max ? `${min}/${year}` : `${min}-${max}/${year}`;
 }
-function createSampleDocxTable({ Table, TableRow, TableCell, Paragraph, TextRun }) {
+function createSampleDocxTable({ Table, TableRow, TableCell, Paragraph, TextRun, WidthType }) {
     const headers = ["क्र.सं.", "विवरण"].concat(sampleDetails.map((_, i) => `(${i+1})`));
     const rows = [
         new TableRow({
