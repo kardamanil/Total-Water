@@ -945,10 +945,10 @@ const rows = [topHeaderRow, secondHeaderRow];
     return new Table({ rows });
 }
 
-function generateRemarksDocx({ Paragraph, TextRun }) {
-    const failedLabs = [];          // (unsuitable / invalid)
-    const permissibleOnlyLabs = []; // (permissible, but no fail)
-    const desirableLabs = [];       // (all desirable)
+function generateRemarksDocx({ Paragraph, TextRun, AlignmentType }) {
+    const failedLabs = [];
+    const permissibleOnlyLabs = [];
+    const desirableLabs = [];
 
     chemicalResults.forEach((result) => {
         const labNo = result["Lab No."];
@@ -986,59 +986,42 @@ function generateRemarksDocx({ Paragraph, TextRun }) {
     const remarks = [];
     let lineNo = 1;
 
+    // Helper function to create justified paragraphs
+    const createJustifiedParagraph = (text) => {
+        return new Paragraph({
+            alignment: "justified", // यहाँ अलाइनमेंट सेट किया गया है
+            children: [
+                new TextRun({
+                    text: text,
+                    size: 18,
+                    font: "Times New Roman"
+                })
+            ]
+        });
+    };
+
     // fail group
     if (failedLabs.length > 0) {
         const text = `(${lineNo}) नमूना प्रयोगशाला संख्या ${failedLabs.join(", ")} अधिकतम अनुमेय श्रेणी की निर्धारित आवश्यकताओं की पूर्ति नहीं करता है, अतः यह उपयुक्त नहीं है।`;
-        remarks.push(
-            new Paragraph({
-                children: [
-                    new TextRun({
-                        text: text,
-                        size: 18,
-                        font: "Times New Roman"
-                    })
-                ]
-            })
-        );
+        remarks.push(createJustifiedParagraph(text));
         lineNo++;
     }
 
     // permissible-only group
     if (permissibleOnlyLabs.length > 0) {
         const text = `(${lineNo}) नमूना प्रयोगशाला संख्या ${permissibleOnlyLabs.join(", ")} उच्चतम अभीष्ट श्रेणी की निर्दिष्ट आवश्यकताओं की पूर्ति नहीं करता है किन्तु अधिकतम अनुज्ञेय श्रेणी के निर्दिष्ट आवश्यकताओं की पूर्ति करता हैं अत: उच्चतर वैकल्पिक स्त्रोत के अभाव में जल का उपयोग कर सकते हैं और क्षेत्र में उपलब्ध जल की सामान्य विशिष्टताओ के आधार पर जल को साधारणतया स्वीकृत किया जा सकता है।`;
-        remarks.push(
-            new Paragraph({
-                children: [
-                    new TextRun({
-                        text: text,
-                        size: 18,
-                        font: "Times New Roman"
-                    })
-                ]
-            })
-        );
+        remarks.push(createJustifiedParagraph(text));
         lineNo++;
     }
 
     // all-desirable group
     if (desirableLabs.length > 0) {
         const text = `(${lineNo}) नमूना प्रयोगशाला संख्या ${desirableLabs.join(", ")} उच्चतम अभीष्ट श्रेणी की निर्धारित आवश्यकताओं की पूर्ति करता है, अतः उपयुक्त है।`;
-        remarks.push(
-            new Paragraph({
-                children: [
-                    new TextRun({
-                        text: text,
-                        size: 18,
-                        font: "Times New Roman"
-                    })
-                ]
-            })
-        );
+        remarks.push(createJustifiedParagraph(text));
     }
 
     return remarks;
 }
-
 
 
 
