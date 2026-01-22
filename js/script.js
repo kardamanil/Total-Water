@@ -866,7 +866,7 @@ function createSampleDocxTable({ Table, TableRow, TableCell, Paragraph, TextRun 
     
 }
 
-function createChemicalDocxTable({ Table, TableRow, TableCell, Paragraph, TextRun }) {
+function createChemicalDocxTable({ Table, TableRow, TableCell, Paragraph, TextRun, AlignmentType }) {
     const sampleCount = sampleDetails.length;
 
 const topHeaderRow = new TableRow({
@@ -881,7 +881,8 @@ const topHeaderRow = new TableRow({
     }),
     new TableCell({
       columnSpan: 2,
-      children: [new Paragraph({ children: [new TextRun({ text: "IS 10500:2012", size: 18 })] })]
+      children: [new Paragraph({ children: [new TextRun({ text: "निर्दिष्ट मान", size: 18 })] })]
+                [new Paragraph({ children: [new TextRun({ text: "(Specified IS: 10500-2012)", size: 18 })] })]
     }),
     new TableCell({
       columnSpan: sampleCount,
@@ -892,14 +893,24 @@ const topHeaderRow = new TableRow({
 
 const secondHeaderCells = [
   new TableCell({
-    children: [new Paragraph({ children: [new TextRun({ text: "अधिकतम अनुमेय श्रेणी", size:18})]
-                             }), 
-              new Paragraph({ children: [new TextRun({ text: "(Permissible Limit in the absence of alternae source)", size: 18 })]
-                             })
-              ]
+    children: [new Paragraph({
+        alignment: AlignmentType.CENTER,
+        children: [
+            new TextRun({text: "अधिकतम अनुमेय श्रेणी",size:18}), 
+            new TextRun({break:1,text: "(Permissible Limit in the absence of alternae source)",size:18})
+        ]
+       })
+     ]
   }),
+    
   new TableCell({
-    children: [new Paragraph({ children: [new TextRun({ text: "उच्चतम अभीष्ट श्रेणी (Acceptable Limit)", size: 18 })] })]
+    children: [new Paragraph({ 
+        alignment:AlignmentType.CENTER,
+        children: [
+            new TextRun({ text: "उच्चतम अभीष्ट श्रेणी", size: 18 }),
+            new TextRun({ break:1,text:"(Acceptable Limit)", size:18,})
+        ]
+    })]
   })
 ];
 
