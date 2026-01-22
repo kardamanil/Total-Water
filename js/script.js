@@ -792,7 +792,7 @@ async function generateFinalReport() {
                     new Paragraph({ children: [new TextRun({ text: "(1) नमूना विवरण (Sample Particulars)", bold: true, size: 18, font: "Times New Roman" })] }),
                     createSampleDocxTable({ Table, TableRow, TableCell, Paragraph, TextRun }),
                     new Paragraph({ children: [new TextRun({ text: "(2) रासायनिक विश्लेषण (Chemical Analysis)", bold: true, size: 18, font: "Times New Roman" })] }),
-                    createChemicalDocxTable({ Table, TableRow, TableCell, Paragraph, TextRun }),
+                    createChemicalDocxTable({ Table, TableRow, TableCell, Paragraph, TextRun, AlignmentType }),
                     new Paragraph({ children: [new TextRun({ text: "टिप्पणी:", size: 18, font: "Times New Roman" })] }),
                     ...generateRemarksDocx({ Paragraph, TextRun, AlignmentType }),
                     
@@ -882,7 +882,7 @@ const topHeaderRow = new TableRow({
     new TableCell({
       columnSpan: 2,
       children: [
-          new Paragraph({ children: [new TextRun({ text: "निर्दिष्ट मान", size: 18 })] }),
+          new Paragraph({ children: [new TextRun({ text: "निर्दिष्ट मान", size: 18 })] }), // यहाँ कॉमा चेक करें
           new Paragraph({ children: [new TextRun({ text: "(Specified IS: 10500-2012)", size: 18 })] })
       ]
     }),
