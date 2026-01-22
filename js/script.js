@@ -881,8 +881,10 @@ const topHeaderRow = new TableRow({
     }),
     new TableCell({
       columnSpan: 2,
-      children: [new Paragraph({ children: [new TextRun({ text: "निर्दिष्ट मान", size: 18 })] })]
-                [new Paragraph({ children: [new TextRun({ text: "(Specified IS: 10500-2012)", size: 18 })] })]
+      children: [
+          new Paragraph({ children: [new TextRun({ text: "निर्दिष्ट मान", size: 18 })] }),
+          new Paragraph({ children: [new TextRun({ text: "(Specified IS: 10500-2012)", size: 18 })] })
+      ]
     }),
     new TableCell({
       columnSpan: sampleCount,
