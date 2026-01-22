@@ -892,10 +892,14 @@ const topHeaderRow = new TableRow({
 
 const secondHeaderCells = [
   new TableCell({
-    children: [new Paragraph({ children: [new TextRun({ text: "निर्धारित मान (Max)", size: 18 })] })]
+    children: [new Paragraph({ children: [new TextRun({ text: "अधिकतम अनुमेय श्रेणी", size:18})]
+                             }), 
+              new Paragraph({ children: [new TextRun({ text: "(Permissible Limit in the absence of alternae source)", size: 18 })]
+                             })
+              ]
   }),
   new TableCell({
-    children: [new Paragraph({ children: [new TextRun({ text: "निर्धारित मान (Desirable)", size: 18 })] })]
+    children: [new Paragraph({ children: [new TextRun({ text: "उच्चतम अभीष्ट श्रेणी (Acceptable Limit)", size: 18 })] })]
   })
 ];
 
