@@ -654,7 +654,7 @@ function populatePreviewTab() {
 
     const chemicalTbody = document.querySelector('#chemical-preview-table tbody');
     chemicalTbody.innerHTML = '';
-    const chemHeaders = ["क.सं.", "परीक्षण (Tests)", "निर्धारित मान (Max)", "निर्धारित मान (Desirable)"].concat(sampleDetails.map(s => s["Lab No."]));
+    const chemHeaders = ["क.सं.", "परीक्षण (Tests)", "अधिकतम अनुमेय श्रेणी (Permissible Limit in the absence of alternae source)", "उच्चतम अभीष्ट श्रेणी (Acceptable Limit)"].concat(sampleDetails.map(s => s["Lab No."]));
     document.querySelector('#chemical-preview-table thead tr').innerHTML = chemHeaders.map(h => `<th>${h}</th>`).join('');
     tests.forEach((test, i) => {
         const tr = chemicalTbody.insertRow();
