@@ -654,7 +654,7 @@ function populatePreviewTab() {
 
     const chemicalTbody = document.querySelector('#chemical-preview-table tbody');
     chemicalTbody.innerHTML = '';
-    const chemHeaders = ["क.सं.", "परीक्षण (Tests)", "अधिकतम अनुमेय श्रेणी (Permissible Limit in the absence of alternae source)", "उच्चतम अभीष्ट श्रेणी (Acceptable Limit)"].concat(sampleDetails.map(s => s["Lab No."]));
+    const chemHeaders = ["क.सं.", "परीक्षण (Tests)", "अधिकतम अनुमेय श्रेणी (Permissible Limit)", "उच्चतम अभीष्ट श्रेणी (Acceptable Limit)"].concat(sampleDetails.map(s => s["Lab No."]));
     document.querySelector('#chemical-preview-table thead tr').innerHTML = chemHeaders.map(h => `<th>${h}</th>`).join('');
     tests.forEach((test, i) => {
         const tr = chemicalTbody.insertRow();
@@ -899,7 +899,7 @@ const secondHeaderCells = [
         alignment: AlignmentType.CENTER,
         children: [
             new TextRun({text: "अधिकतम अनुमेय श्रेणी",size:18}), 
-            new TextRun({break:1,text: "(Permissible Limit in the absence of alternae source)",size:18})
+            new TextRun({break:1,text: "(Permissible Limit)",size:18})
         ]
        })
      ]
