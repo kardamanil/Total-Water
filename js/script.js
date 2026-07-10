@@ -692,7 +692,7 @@ async function generateFinalReport() {
             if (existing.exists()) {
                 if (!confirm(`Lab No. ${labNo} पहले से मौजूद है। ओवरराइट करें?`)) continue;
             }
-            await setDoc(docRef, { ...sample, ...chemical, docId: docId });
+            await setDoc(docRef, { ...sample, ...chemical, docId: docId },{ merge: true });
             console.log('Successfully saved to Firebase for Lab No.:', labNo);
         } catch (err) {
             console.error('Save error for Lab No.', labNo, ':', err);
