@@ -402,5 +402,75 @@
 
 
     <script src="js/script.js" type="module"></script>
+
+
+
+
+<script type="module">
+    import { 
+        getAuth, 
+        signInWithEmailAndPassword, 
+        signOut, 
+        onAuthStateChanged 
+    } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
+    import { getApp } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js';
+
+    // Total-Water App instance lena
+    const totalWaterApp = getApp("totalWater");
+    const totalWaterAuth = getAuth(totalWaterApp);
+
+    const authScreen = document.getElementById("authScreen");
+    const protectedApp = document.getElementById("protectedApp");
+    const loginForm = document.getElementById("loginForm");
+    const loginEmail = document.getElementById("loginEmail");
+    const loginPassword = document.getElementById("loginPassword");
+    const loginErrorMsg = document.getElementById("loginErrorMsg");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    // Session State Monitor
+    onAuthStateChanged(totalWaterAuth, (user) => {
+        if (user) {
+            authScreen.style.display = "none";
+            protectedApp.style.display = "block";
+        } else {
+            authScreen.style.display = "block";
+            protectedApp.style.display = "none";
+        }
+    });
+
+    // Login Form Submit
+    if (loginForm) {
+        loginForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            loginErrorMsg.textContent = "Checking...";
+            const email = loginEmail.value.trim();
+            const pass = loginPassword.value;
+
+            try {
+                await signInWithEmailAndPassword(totalWaterAuth, email, pass);
+                loginErrorMsg.textContent = "";
+                loginForm.reset();
+            } catch (error) {
+                console.error("Login Error:", error);
+                loginErrorMsg.textContent = "Galat Email ya Password!";
+            }
+        });
+    }
+
+    // Logout Click
+    if (logoutBtn) {
+        logoutBtn.addEventListener("click", () => {
+            signOut(totalWaterAuth);
+        });
+    }
+</script>
+
+
+
+
+
+
+
+
 </body>
 </html>
