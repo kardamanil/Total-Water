@@ -41,6 +41,77 @@
  -->
 
 
+<!-- this is new 16092026-->
+
+
+        import { 
+            getAuth, 
+            signInWithEmailAndPassword, 
+            signOut, 
+            onAuthStateChanged 
+        } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
+
+        const totalWaterApp = initializeApp(totalWaterConfig, "totalWater");
+        const totalWaterAuth = getAuth(totalWaterApp);
+        window.totalWaterDb = getFirestore(totalWaterApp);
+
+        // UI elements
+        const authScreen = document.getElementById("authScreen");
+        const protectedApp = document.getElementById("protectedApp");
+        const loginForm = document.getElementById("loginForm");
+        const loginEmail = document.getElementById("loginEmail");
+        const loginPassword = document.getElementById("loginPassword");
+        const loginErrorMsg = document.getElementById("loginErrorMsg");
+        const logoutBtn = document.getElementById("logoutBtn");
+
+        // 1. Check Login State (Session check)
+        onAuthStateChanged(totalWaterAuth, (user) => {
+            if (user) {
+                authScreen.style.display = "none";
+                protectedApp.style.display = "block";
+            } else {
+                authScreen.style.display = "block";
+                protectedApp.style.display = "none";
+            }
+        });
+
+        // 2. Form Submit Login Action
+        if (loginForm) {
+            loginForm.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                loginErrorMsg.textContent = "";
+                const email = loginEmail.value.trim();
+                const pass = loginPassword.value;
+
+                try {
+                    await signInWithEmailAndPassword(totalWaterAuth, email, pass);
+                    loginForm.reset();
+                } catch (error) {
+                    console.error("Login failed:", error);
+                    loginErrorMsg.textContent = "Galat Email ya Password!";
+                }
+            });
+        }
+
+        // 3. Logout Action
+        if (logoutBtn) {
+            logoutBtn.addEventListener("click", () => {
+                signOut(totalWaterAuth);
+            });
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         // JalGanana Firebase Config
         const jalGananaConfig = {
